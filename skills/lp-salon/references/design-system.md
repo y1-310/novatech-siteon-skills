@@ -1,0 +1,136 @@
+# lp-salon デザインシステム
+
+## カラープリセット
+
+### グレージュ × モード
+
+```css
+:root {
+  --bg: #F7F5F2;
+  --bg-alt: #EFECE7;
+  --bg-dark: #1C1B19;
+  --text: #1A1918;
+  --text-mid: #44403B;
+  --text-light: #6E6860;
+  --accent: #7A6A58;
+  --line: #D4CDC3;
+  --r: 3px;
+  --mw: 1080px;
+}
+```
+英字: Playfair Display
+和文見出し: Shippori Mincho
+
+### ナチュラル × 上品
+
+```css
+:root {
+  --bg: #FAF8F4;
+  --bg-alt: #F2EDE5;
+  --bg-dark: #2C2825;
+  --text: #2C2825;
+  --text-mid: #5C5650;
+  --text-light: #7A746C;
+  --accent: #6B8A5E;
+  --line: #E0D8CC;
+  --r: 8px;
+  --mw: 1080px;
+}
+```
+英字: Cormorant Garamond
+和文見出し: Zen Old Mincho
+
+### モノトーン × モード
+
+```css
+:root {
+  --bg: #F5F5F3;
+  --bg-alt: #EAEAE7;
+  --bg-dark: #111110;
+  --text: #111110;
+  --text-mid: #3D3D3A;
+  --text-light: #5E5E58;
+  --accent: #B09B72;
+  --line: #D5D5D0;
+  --r: 0px;
+  --mw: 1080px;
+}
+```
+英字: DM Serif Display
+和文見出し: Shippori Mincho
+
+### くすみカラー × 温もり
+
+```css
+:root {
+  --bg: #F8F4F2;
+  --bg-alt: #F0EAE6;
+  --bg-dark: #2A2425;
+  --text: #2A2425;
+  --text-mid: #524A4C;
+  --text-light: #7A7072;
+  --accent: #B5868A;
+  --line: #E0D6D4;
+  --r: 12px;
+  --mw: 1080px;
+}
+```
+英字: Cormorant Garamond
+和文見出し: Noto Serif JP
+
+## Q13×Q14 → プリセット自動マッピング
+
+| Q13（カラー方向性） | Q14（トーン） | プリセット |
+|-------------------|-------------|-----------|
+| グレージュ | モード・洗練 | グレージュ × モード |
+| グレージュ | 静謐・上品 | グレージュ × モード |
+| ナチュラル | 温もり・親しみ | ナチュラル × 上品 |
+| ナチュラル | 静謐・上品 | ナチュラル × 上品 |
+| モノトーン×ゴールド | モード・洗練 | モノトーン × モード |
+| モノトーン×ゴールド | 静謐・上品 | モノトーン × モード |
+| くすみカラー | 温もり・親しみ | くすみカラー × 温もり |
+| くすみカラー | 静謐・上品 | くすみカラー × 温もり |
+| おまかせ | おまかせ | グレージュ × モード（デフォルト） |
+
+## タイポグラフィ仕様
+
+| 要素 | フォント | サイズ | Weight |
+|------|---------|--------|--------|
+| セクションナンバー | ディスプレイフォント | 0.72rem | 400 |
+| セクション英字タイトル | ディスプレイフォント | clamp(2rem, 4.5vw, 2.8rem) | 400 |
+| セクション日本語サブ | Shippori Mincho | 0.85rem | 400 |
+| 本文 | Noto Sans JP | 14.5px | 300 |
+| コンセプト文 | 和文見出しフォント | 0.92rem | 400 |
+| メニュー名 | Noto Sans JP | 0.85rem | 300 |
+| 価格 | ディスプレイフォント | 0.95rem | 400 |
+| マーキー | ディスプレイフォント italic | 1rem | 300 |
+
+## レスポンシブ仕様
+
+| ブレークポイント | padding | グリッド | ヒーロー |
+|----------------|---------|---------|---------|
+| Desktop（1280px+） | 120px | 2〜3列 | 100vh |
+| Tablet（768px） | 80px | 1〜2列 | 100vh |
+| Mobile（375px） | 56px | 1列 | 100vh（min-height: 520px） |
+
+## 技術仕様
+
+- 単一HTMLファイル（CSS/JS inline）
+- Google Fonts（font-display: swap、preconnect設定）
+- セマンティックHTML（header/nav/main/section/footer）
+- OGPメタタグ4種＋twitter:card
+- JSON-LD構造化データ（@type: HairSalon）
+- Lighthouse各項目90点以上目標
+- 全画像にalt属性（日本語）、loading="lazy"（ヒーロー除く）、width/height指定
+- canonical URL（マルチページ時）
+- viewport設定
+
+## フォント読み込みテンプレート
+
+```html
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family={ディスプレイフォント}:ital,wght@0,400;1,300&family={和文見出しフォント}:wght@400&family=Noto+Sans+JP:wght@300;400&display=swap" rel="stylesheet">
+```
+
+※日本語フォントは最大3ウェイト。fallbackスタック必須。

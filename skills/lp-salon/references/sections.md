@@ -1,0 +1,415 @@
+# lp-salon セクション仕様
+
+## 1. Hero（ナンバリングなし）
+
+### パターン1：全画面写真＋中央ロゴ（GROEN型）— スタンダードデフォルト
+
+```html
+<section class="hero">
+  <div class="hero-overlay"></div>
+  <div class="hero-content">
+    <h1 class="hero-logo" lang="en">{サロン名英語}</h1>
+    <p class="hero-sub">{キャッチコピー}</p>
+    <a href="#reservation" class="btn btn-hero">Reserve</a>
+  </div>
+  <div class="hero-scroll" aria-hidden="true">
+    <span lang="en">Scroll</span>
+  </div>
+</section>
+```
+
+仕様：
+- 100vh、dark overlay（rgba(0,0,0,0.3)）
+- 中央にサロン名＋キャッチ
+- Scrollインジケーター（下部中央）
+- background-size: cover、background-position: center
+
+### パターン2：スライドショー（maple型）— プロ以上
+
+```html
+<section class="hero hero-slideshow">
+  <div class="hero-slides">
+    <div class="hero-slide active" style="background-image: url('{画像1}')"></div>
+    <div class="hero-slide" style="background-image: url('{画像2}')"></div>
+    <div class="hero-slide" style="background-image: url('{画像3}')"></div>
+  </div>
+  <div class="hero-overlay"></div>
+  <div class="hero-content">
+    <h1 class="hero-logo" lang="en">{サロン名英語}</h1>
+    <p class="hero-sub">{キャッチコピー}</p>
+  </div>
+  <div class="hero-dots" role="tablist" aria-label="スライド切り替え">
+    <button class="dot active" role="tab" aria-selected="true" aria-label="スライド1"></button>
+    <button class="dot" role="tab" aria-selected="false" aria-label="スライド2"></button>
+    <button class="dot" role="tab" aria-selected="false" aria-label="スライド3"></button>
+  </div>
+</section>
+```
+
+仕様：
+- 100vh、3〜5枚フェード切り替え、5秒間隔
+- ドットインジケーター
+- JS: opacity切り替え（transform+opacityのみ）
+
+### パターン3：超ミニマル（TOH型）— プロ以上のみ
+
+```html
+<section class="hero hero-minimal">
+  <div class="hero-image">
+    <img src="{画像}" alt="{サロン名}の店内" width="1200" height="800">
+  </div>
+  <div class="hero-info">
+    <h1 lang="en">{サロン名英語}</h1>
+    <ul class="hero-news">
+      <li><time>{日付}</time><span>{お知らせ内容}</span></li>
+      <!-- 3〜5件 -->
+    </ul>
+  </div>
+</section>
+```
+
+仕様：
+- 写真1枚＋ロゴのみ
+- お知らせ3〜5件
+- ナビゲーションが主役
+
+---
+
+## 2. Concept（ナンバリング: 01）
+
+### パターンA：3段構造（NANEA型）
+
+```html
+<section id="concept" class="section">
+  <span class="section-number">01</span>
+  <h2 class="section-title" lang="en">Concept</h2>
+  <p class="section-subtitle">コンセプト</p>
+
+  <div class="concept-block">
+    <div class="concept-item">
+      <span class="concept-label" lang="en">{英字ラベル1}</span>
+      <h3>{日本語見出し1}</h3>
+      <p>{本文1}</p>
+    </div>
+    <div class="concept-image">
+      <img src="{画像}" alt="{説明}" width="600" height="800" loading="lazy">
+    </div>
+    <!-- 2段目、3段目も同構造 -->
+  </div>
+</section>
+```
+
+適する場面：語りたいことが多いオーナー、新規開業
+
+### パターンB：ストーリー型（GREENROOM型）
+
+```html
+<section id="concept" class="section">
+  <span class="section-number">01</span>
+  <h2 class="section-title" lang="en">Concept</h2>
+  <p class="section-subtitle">コンセプト</p>
+
+  <div class="concept-story">
+    <div class="concept-text">
+      <p class="concept-prose">{散文テキスト。行間広く、max-width: 480px。}</p>
+    </div>
+    <div class="concept-photo">
+      <img src="{画像}" alt="{説明}" width="600" height="800" loading="lazy">
+    </div>
+  </div>
+</section>
+```
+
+適する場面：サロン名に想いがあるオーナー
+
+### パターンC：一言コピー型（OTOKO型）
+
+```html
+<section id="concept" class="section">
+  <span class="section-number">01</span>
+  <h2 class="section-title" lang="en">Concept</h2>
+  <p class="section-subtitle">コンセプト</p>
+
+  <div class="concept-oneliner">
+    <p class="concept-catch">{キャッチコピー 2〜3rem全幅}</p>
+    <p class="concept-desc">{補足文 --text-midで控えめ}</p>
+  </div>
+</section>
+```
+
+適する場面：モード系トーン
+
+---
+
+## 3. Features（ナンバリング: 02）
+
+```html
+<section id="features" class="section">
+  <span class="section-number">02</span>
+  <h2 class="section-title" lang="en">Features</h2>
+  <p class="section-subtitle">こだわり</p>
+
+  <div class="features-list">
+    <div class="feature-item">
+      <div class="feature-image">
+        <img src="{画像}" alt="{説明}" width="600" height="400" loading="lazy">
+      </div>
+      <div class="feature-text">
+        <span class="feature-number" lang="en">01</span>
+        <h3>{こだわりタイトル}</h3>
+        <p>{こだわり説明文}</p>
+      </div>
+    </div>
+    <!-- 交互レイアウト：奇数は画像左、偶数は画像右 -->
+  </div>
+</section>
+```
+
+仕様：
+- 3〜4つのこだわり
+- 交互レイアウト（flex-direction: row / row-reverse）
+- モバイルでは縦並び
+
+---
+
+## 4. Menu（ナンバリング: 03）
+
+### パターン1：定義リスト型（ILOLI型）— スタンダードデフォルト
+
+```html
+<section id="menu" class="section">
+  <span class="section-number">03</span>
+  <h2 class="section-title" lang="en">Menu</h2>
+  <p class="section-subtitle">メニュー</p>
+
+  <div class="menu-category">
+    <h3 lang="en">{カテゴリ名}</h3>
+    <dl class="menu-list">
+      <div class="menu-item">
+        <dt>{メニュー名}</dt>
+        <dd class="menu-price">¥{価格}<span class="tax">（税込）</span></dd>
+      </div>
+      <!-- 繰り返し -->
+    </dl>
+  </div>
+</section>
+```
+
+仕様：ドットリーダー（border-bottom: dotted）。税込表記。
+
+### パターン2：写真付きカード型（MILLOR型）— プロ以上
+
+```html
+<div class="menu-cards">
+  <div class="menu-card">
+    <img src="{画像}" alt="{メニュー名}" width="400" height="300" loading="lazy">
+    <h4>{カテゴリ名}</h4>
+    <p>{説明文}</p>
+    <span class="menu-price">¥{価格}〜<span class="tax">（税込）</span></span>
+  </div>
+  <!-- 2〜3列グリッド -->
+</div>
+```
+
+### パターン3：タブ切り替え型（mile/TOH型）— プロ以上
+
+```html
+<div class="menu-tabs" role="tablist">
+  <button class="tab active" role="tab" aria-selected="true" aria-controls="tab-cut">Cut</button>
+  <button class="tab" role="tab" aria-selected="false" aria-controls="tab-color">Color</button>
+  <button class="tab" role="tab" aria-selected="false" aria-controls="tab-perm">Perm</button>
+</div>
+<div id="tab-cut" class="tab-panel" role="tabpanel">
+  <!-- 定義リスト型のメニュー -->
+</div>
+```
+
+仕様：JS実装（CSS :target フォールバック）。noscript時は全展開。
+
+### メニュー追加情報
+
+| 追加項目 | 条件 | 内容 |
+|---------|------|------|
+| 施術時間 | Q10.7＝あり | 各メニューに「約60分」等を表示 |
+| 初回価格 | Q10.3＝あり | 「初回 ¥5,500 / 通常 ¥7,700」の併記 |
+| スタイリスト別料金 | Q10.5＝あり | ランク別価格表示（3方式から最適を提案） |
+| 「こんな方におすすめ」 | 任意 | 各メニューに1行添える |
+| 使用薬剤 | 任意 | 「Avedaカラー使用」等 |
+
+### スタイリスト別料金の表示方式
+
+| 方式 | 内容 | 適するケース |
+|------|------|-------------|
+| A：列追加 | 料金表にランク列を追加 | スタッフ3名以下・メニュー少なめ |
+| B：注釈 | メニュー名の横に注釈で展開 | メニュー数が多い場合 |
+| C：ランク別タブ | スタイリスト/トップ/ディレクターのタブ切り替え | スタッフ多い・メニュー多い |
+
+---
+
+## 5. Style Gallery（ナンバリング: 04）
+
+命名3択：Gallery / Collection / Styles（Q17.5で決定）
+
+### パターン1：横スクロール（GROEN型）— スタンダードデフォルト
+
+```html
+<section id="gallery" class="section">
+  <span class="section-number">04</span>
+  <h2 class="section-title" lang="en">{Gallery/Collection/Styles}</h2>
+  <p class="section-subtitle">スタイル</p>
+
+  <div class="gallery-scroll">
+    <div class="gallery-card">
+      <img src="{画像}" alt="{スタイル名}" width="260" height="347" loading="lazy">
+      <p class="gallery-caption" lang="en">{英字キャプション}</p>
+    </div>
+    <!-- 繰り返し -->
+  </div>
+</section>
+```
+
+仕様：flex + overflow-x: auto + scroll-snap。カード幅260px。
+
+### パターン2：LOOKBOOKスライド（MILLOR型）— プロ以上
+
+```html
+<div class="lookbook">
+  <div class="lookbook-main">
+    <img src="{画像}" alt="{スタイル名}" width="800" height="1067">
+  </div>
+  <button class="lookbook-prev" aria-label="前のスタイル">←</button>
+  <button class="lookbook-next" aria-label="次のスタイル">→</button>
+  <div class="lookbook-tags">
+    <span class="tag">#ショートボブ</span>
+    <span class="tag">#透明感カラー</span>
+  </div>
+</div>
+```
+
+仕様：1枚ずつ大きく表示＋左右ナビ。ハッシュタグ表示。
+
+---
+
+## 6. Staff（ナンバリング: 05）
+
+```html
+<section id="staff" class="section">
+  <span class="section-number">05</span>
+  <h2 class="section-title" lang="en">Staff</h2>
+  <p class="section-subtitle">スタッフ</p>
+
+  <div class="staff-list">
+    <div class="staff-card">
+      <img src="{写真}" alt="{名前}" width="400" height="500" loading="lazy">
+      <h3>{名前}</h3>
+      <p class="staff-role" lang="en">{役職/肩書き}</p>
+      <p class="staff-message">{メッセージ}</p>
+    </div>
+    <!-- 繰り返し -->
+  </div>
+</section>
+```
+
+---
+
+## 7. Photo Gallery（ナンバリング: 06）
+
+```html
+<section id="photos" class="section">
+  <span class="section-number">06</span>
+  <h2 class="section-title" lang="en">Photo</h2>
+  <p class="section-subtitle">サロン</p>
+
+  <div class="photo-grid">
+    <div class="photo-item">
+      <img src="{画像}" alt="{説明}" width="400" height="300" loading="lazy">
+      <span class="photo-caption" lang="en">{英字キャプション}</span>
+    </div>
+    <!-- グリッドレイアウト -->
+  </div>
+</section>
+```
+
+仕様：2〜3列グリッド。英字キャプション。
+
+---
+
+## 8. Access（ナンバリング: 07）
+
+```html
+<section id="access" class="section">
+  <span class="section-number">07</span>
+  <h2 class="section-title" lang="en">Access</h2>
+  <p class="section-subtitle">アクセス</p>
+
+  <div class="access-content">
+    <div class="access-info">
+      <dl>
+        <dt>住所</dt><dd>{住所}</dd>
+        <dt>営業時間</dt><dd>{営業時間}</dd>
+        <dt>定休日</dt><dd>{定休日}</dd>
+        <dt>電話番号</dt><dd><a href="tel:{電話番号}">{電話番号表示}</a></dd>
+        <dt>お支払い方法</dt><dd>{支払い方法}</dd>
+      </dl>
+    </div>
+    <div class="access-map">
+      <iframe
+        src="https://www.google.com/maps/embed?pb={MAP_EMBED_ID}"
+        width="100%" height="400" style="border:0;" allowfullscreen=""
+        loading="lazy" referrerpolicy="no-referrer-when-downgrade"
+        title="{サロン名}の地図"
+      ></iframe>
+    </div>
+  </div>
+</section>
+```
+
+オプション追加：
+- 駐車場情報（Q18選択時）
+- 道順写真（Q18選択時）
+
+---
+
+## 9. Reservation（ナンバリング: 08）
+
+→ `_common/reservation-ui.md` の4パターンを参照。
+Q9.5の回答に応じてパターンA〜Dを選択。
+
+---
+
+## 10. CTA（ナンバリングなし）
+
+```html
+<section class="section cta-section">
+  <div class="container">
+    <p class="cta-catch" lang="en">{英字キャッチ}</p>
+    <p class="cta-sub">{日本語サブコピー}</p>
+    <a href="#reservation" class="btn btn-cta">ご予約はこちら</a>
+    <a href="tel:{電話番号}" class="btn btn-cta-outline">お電話で予約</a>
+  </div>
+</section>
+```
+
+仕様：ダーク背景（var(--bg-dark)）。テキスト白。
+ギフトカード選択時はサブCTA追加。
+
+---
+
+## 11. Footer（ナンバリングなし）
+
+```html
+<footer class="footer">
+  <div class="container">
+    <p class="footer-logo" lang="en">{サロン名}</p>
+    <div class="footer-sns">
+      <a href="{Instagram URL}" target="_blank" rel="noopener" aria-label="Instagram">
+        <!-- Instagram SVGアイコン -->
+      </a>
+      <a href="{LINE URL}" target="_blank" rel="noopener" aria-label="LINE">
+        <!-- LINE SVGアイコン -->
+      </a>
+    </div>
+    <p class="footer-copy">&copy; {年} {サロン名}. All rights reserved.</p>
+  </div>
+</footer>
+```
