@@ -9,6 +9,7 @@
 - 回答不足がある場合のみ不足項目を再質問する。
 
 ### 2. Googleフォーム
+- フォーム URL: https://docs.google.com/forms/d/e/1FAIpQLSfFk_M2GZ1QP5DFywp_RKH_h2Jwjqrf91FjzQxer10Ekej9aQ/viewform
 - フォーム回答をそのまま受け取り、各設問をJSONへ正規化する。
 - 自由記述は意味を変えずに整形する。
 

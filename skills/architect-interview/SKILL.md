@@ -13,6 +13,8 @@
 
 3つの入口いずれも最終的にJSONに変換され、同じスキルで処理される。
 
+**Googleフォーム URL**: https://docs.google.com/forms/d/e/1FAIpQLSeiwuMve4CPzavuR7JH3oAiR5CYCT-haIDgoK2WhLCa6H6VQg/viewform
+
 ## ヒアリング項目（全6ラウンド）
 
 ### Round 0：契約形態
