@@ -2,24 +2,8 @@
 
 ## カラープリセット
 
-### コーポレート × クリーン（デフォルト）
-
-```css
-:root {
-  --bg: #F5F5F3;
-  --bg-alt: #EDEDEA;
-  --bg-dark: #18181A;
-  --text: #18181A;
-  --text-mid: #3D3D3A;
-  --text-light: #5E5E58;
-  --accent: #3A6B5C;
-  --line: #D5D5D0;
-  --r: 4px;
-  --mw: 1200px;
-}
-```
-英字: DM Sans
-和文見出し: Noto Sans JP（weight: 500）
+→ `salon-interview/references/presets.md` を参照（Single Source of Truth）。
+lp-salon-group は1プリセットのみ：「コーポレート × クリーン」（max-width: 1200px、他スキルより広め）。
 
 ## デザイン原則
 

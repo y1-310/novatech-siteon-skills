@@ -1,96 +1,10 @@
 # lp-salon デザインシステム
 
-## カラープリセット
+## カラープリセット & Q13×Q14 マッピング
 
-### グレージュ × モード
-
-```css
-:root {
-  --bg: #F7F5F2;
-  --bg-alt: #EFECE7;
-  --bg-dark: #1C1B19;
-  --text: #1A1918;
-  --text-mid: #44403B;
-  --text-light: #6E6860;
-  --accent: #7A6A58;
-  --line: #D4CDC3;
-  --r: 3px;
-  --mw: 1080px;
-}
-```
-英字: Playfair Display
-和文見出し: Shippori Mincho
-
-### ナチュラル × 上品
-
-```css
-:root {
-  --bg: #FAF8F4;
-  --bg-alt: #F2EDE5;
-  --bg-dark: #2C2825;
-  --text: #2C2825;
-  --text-mid: #5C5650;
-  --text-light: #7A746C;
-  --accent: #6B8A5E;
-  --line: #E0D8CC;
-  --r: 8px;
-  --mw: 1080px;
-}
-```
-英字: Cormorant Garamond
-和文見出し: Zen Old Mincho
-
-### モノトーン × モード
-
-```css
-:root {
-  --bg: #F5F5F3;
-  --bg-alt: #EAEAE7;
-  --bg-dark: #111110;
-  --text: #111110;
-  --text-mid: #3D3D3A;
-  --text-light: #5E5E58;
-  --accent: #B09B72;
-  --line: #D5D5D0;
-  --r: 0px;
-  --mw: 1080px;
-}
-```
-英字: DM Serif Display
-和文見出し: Shippori Mincho
-
-### くすみカラー × 温もり
-
-```css
-:root {
-  --bg: #F8F4F2;
-  --bg-alt: #F0EAE6;
-  --bg-dark: #2A2425;
-  --text: #2A2425;
-  --text-mid: #524A4C;
-  --text-light: #7A7072;
-  --accent: #B5868A;
-  --line: #E0D6D4;
-  --r: 12px;
-  --mw: 1080px;
-}
-```
-英字: Cormorant Garamond
-和文見出し: Noto Serif JP
-
-## Q13×Q14 → プリセット自動マッピング
-
-| Q13（カラー方向性） | Q14（トーン） | プリセット |
-|-------------------|-------------|-----------|
-| グレージュ | モード・洗練 | グレージュ × モード |
-| グレージュ | 静謐・上品 | グレージュ × モード |
-| ナチュラル | 温もり・親しみ | ナチュラル × 上品 |
-| ナチュラル | 静謐・上品 | ナチュラル × 上品 |
-| モノトーン×ゴールド | モード・洗練 | モノトーン × モード |
-| モノトーン×ゴールド | 静謐・上品 | モノトーン × モード |
-| くすみカラー | 温もり・親しみ | くすみカラー × 温もり |
-| くすみカラー | 静謐・上品 | くすみカラー × 温もり |
-| おまかせ | おまかせ | グレージュ × モード（デフォルト） |
+→ `salon-interview/references/presets.md` を参照（全 lp-* スキルの Single Source of Truth）。
+lp-salon は4プリセット：グレージュ × モード / ナチュラル × 上品 / モノトーン × モード / くすみカラー × 温もり。
+デフォルトは「グレージュ × モード」。
 
 ## タイポグラフィ仕様
 

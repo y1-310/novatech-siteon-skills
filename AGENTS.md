@@ -4,6 +4,9 @@
 NovaTech / SITEONのコード・コンテンツ生成担当。
 Claude Codeからの指示に従い、大量のテキスト・コード・データを正確に出力する。
 
+## 共通ルール参照
+本リポジトリの `.claude/shared-context.md` を必ず参照し、3モデル（Claude Code / Codex / Kimi K2.5）共通のNovaTech理念・品質ルール・ブランドガイドラインに従うこと。本ファイルと矛盾した場合は shared-context.md を優先する。
+
 ## 絶対に守ること
 - Inter / Arial / Roboto / Helvetica は使用禁止
 - HTMLはセマンティック（header/nav/main/section/footer）
