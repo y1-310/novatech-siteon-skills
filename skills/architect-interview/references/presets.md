@@ -7,7 +7,7 @@
 :root {
   --bg: #FAFAF8; --bg-alt: #F2F0EC; --bg-dark: #2A2824;
   --text: #2A2824; --text-mid: #5A5650; --text-light: #7A746C;
-  --accent: #7A8B6F; --line: #E0DCD6;
+  --accent: #66745D; --line: #E0DCD6;
   --r: 4px; --mw: 1080px;
 }
 ```
@@ -18,7 +18,7 @@
 :root {
   --bg: #F9F5EF; --bg-alt: #F0EAE0; --bg-dark: #28231C;
   --text: #28231C; --text-mid: #504840; --text-light: #786E64;
-  --accent: #A67C52; --line: #DDD5C8;
+  --accent: #8E6A46; --line: #DDD5C8;
   --r: 8px; --mw: 1080px;
 }
 ```

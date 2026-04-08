@@ -3,6 +3,8 @@
 > このファイルは全 lp-* スキルのカラープリセットの **Single Source of Truth**。
 > 各 `lp-*/references/design-system.md` はこのファイルを参照すること。
 > プリセットの色コード・フォント名を変更する場合は必ずここで更新する。
+>
+> **WCAG AA 準拠**：全ての `--accent` は対応する `--bg` に対して contrast ratio 4.5:1 以上を満たすよう調整済み（白文字ボタン背景として使用可能）。プリセット値を変更する際は必ず Lighthouse / axe-core で再検証すること。
 
 ## lp-salon（女性向け美容室）
 
@@ -22,7 +24,7 @@
 :root {
   --bg: #FAF8F4; --bg-alt: #F2EDE5; --bg-dark: #2C2825;
   --text: #2C2825; --text-mid: #5C5650; --text-light: #7A746C;
-  --accent: #6B8A5E; --line: #E0D8CC;
+  --accent: #5C7650; --line: #E0D8CC;
   --r: 8px; --mw: 1080px;
 }
 ```
@@ -33,7 +35,7 @@
 :root {
   --bg: #F5F5F3; --bg-alt: #EAEAE7; --bg-dark: #111110;
   --text: #111110; --text-mid: #3D3D3A; --text-light: #5E5E58;
-  --accent: #B09B72; --line: #D5D5D0;
+  --accent: #7B6C4F; --line: #D5D5D0;
   --r: 0px; --mw: 1080px;
 }
 ```
@@ -44,7 +46,7 @@
 :root {
   --bg: #F8F4F2; --bg-alt: #F0EAE6; --bg-dark: #2A2425;
   --text: #2A2425; --text-mid: #524A4C; --text-light: #7A7072;
-  --accent: #B5868A; --line: #E0D6D4;
+  --accent: #896568; --line: #E0D6D4;
   --r: 12px; --mw: 1080px;
 }
 ```
@@ -81,7 +83,7 @@
 :root {
   --bg: #F5F0E8; --bg-alt: #EBE5DA; --bg-dark: #1A1918;
   --text: #1A1918; --text-mid: #4A4540; --text-light: #7A756E;
-  --accent: #C05835; --line: #D8D0C4;
+  --accent: #AC4F2F; --line: #D8D0C4;
   --r: 4px; --mw: 1080px;
 }
 ```
@@ -96,7 +98,7 @@
 :root {
   --bg: #FAF6F5; --bg-alt: #F2ECEB; --bg-dark: #2A2325;
   --text: #2A2325; --text-mid: #524A4C; --text-light: #7A7072;
-  --accent: #C4919A; --line: #E0D6D4;
+  --accent: #89656B; --line: #E0D6D4;
   --r: 12px; --mw: 1080px;
 }
 ```
@@ -107,7 +109,7 @@
 :root {
   --bg: #F7F5F9; --bg-alt: #EEEAF2; --bg-dark: #22202A;
   --text: #22202A; --text-mid: #4A4558; --text-light: #6E6880;
-  --accent: #8E7BA8; --line: #D8D4E0;
+  --accent: #77678D; --line: #D8D4E0;
   --r: 8px; --mw: 1080px;
 }
 ```
@@ -118,7 +120,7 @@
 :root {
   --bg: #F9F6F1; --bg-alt: #F0EBE3; --bg-dark: #28251F;
   --text: #28251F; --text-mid: #4A4540; --text-light: #7A756E;
-  --accent: #A6896E; --line: #E0D8CC;
+  --accent: #816A55; --line: #E0D8CC;
   --r: 8px; --mw: 1080px;
 }
 ```
