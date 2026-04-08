@@ -129,6 +129,45 @@
 
 ### Recruit（05）— グループ全体の採用
 
+#### レイアウトルール（必須）
+
+- **募集職種カードは 1 カラム縦並び**（`.recruit-positions` は `display: grid; grid-template-columns: 1fr`）。tablet / mobile 全てで 1 カラム維持。2 カラム以上にしない
+- **各職種カード内の dt/dd は横並びの grid**（`.position-list` は `display: grid; grid-template-columns: 120px 1fr; column-gap: 18px; row-gap: 10px; align-items: baseline`）
+- **モバイル（≤767px）でも grid を維持**。`.company-list` を 1 カラムに崩しても `.position-list` は崩さない
+- 長い値（資格欄など）は `white-space: nowrap` を付けず自然に折り返す（情報損失防止）
+- ※ axe-core 対応のため `<dl>` の直下に `<div>` を入れない。dt と dd は直接子要素にする
+
+参考 CSS:
+
+```css
+.recruit-positions {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 18px;
+}
+
+.position-list {
+  margin: 0;
+  display: grid;
+  grid-template-columns: 120px 1fr;
+  column-gap: 18px;
+  row-gap: 10px;
+  align-items: baseline;
+}
+
+.position-list dd {
+  margin: 0;
+}
+
+@media (max-width: 767px) {
+  .position-list {
+    column-gap: 14px;
+    row-gap: 8px;
+  }
+}
+```
+
+
 ```html
 <section id="recruit" class="section">
   <span class="section-number">05</span>
@@ -144,7 +183,7 @@
     <div class="recruit-positions">
       <div class="position-card">
         <h4>{職種名}</h4>
-        <dl>
+        <dl class="position-list">
           <dt>勤務地</dt><dd>{勤務地}</dd>
           <dt>給与</dt><dd>{給与}</dd>
           <dt>勤務時間</dt><dd>{勤務時間}</dd>
