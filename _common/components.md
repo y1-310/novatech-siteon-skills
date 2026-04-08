@@ -168,5 +168,82 @@ transparent → 半透明背景 + border-bottom + backdrop-filter blur
 | ブレークポイント | padding | グリッド | ヒーロー |
 |----------------|---------|---------|---------|
 | Desktop（1280px+） | 120px | 2〜3列 | 100vh |
-| Tablet（768px） | 80px | 1〜2�� | 100vh |
+| Tablet（768px） | 80px | 1〜2列 | 100vh |
 | Mobile（375px） | 72px | 1列 | 100vh（min-height: 520px） |
+
+---
+
+## CLS 対策ルール（必須）
+
+Lighthouse の Cumulative Layout Shift を 0.1 未満に抑えるため、以下を全 lp-* スキルで遵守する。lp-restaurant tomori の CLS 0.205→0.076 改善で実証済み。
+
+### 1. Hero は `align-items: start` + 内側に明示的な `min-height`
+
+**禁止**：`.hero` を `align-items: end`（content を bottom 寄せ）にして web font swap を起こすと、ロード時にコンテンツが大きく上下にシフトして CLS が悪化する。
+
+**必須**：
+
+```css
+.hero {
+  min-height: 100vh;
+  display: grid;
+  align-items: start; /* end ではなく start を使う */
+}
+
+.hero-inner {
+  min-height: 100vh; /* インナーにも min-height を明示 */
+  padding-top: calc(var(--header-h) + 220px); /* 上余白で位置を作る */
+}
+```
+
+### 2. 大型見出しに `font-size-adjust: 0.5`
+
+Hero タイトルなど font-size が大きい要素は、web font ロード前後で fallback フォントとの x-height 差により大きくシフトする。`font-size-adjust` で fallback font の x-height を loaded font に揃え、シフトを抑える。
+
+```css
+.hero-title {
+  font-size-adjust: 0.5;
+}
+```
+
+複数の見出し（section-title, page-title 等）にも積極的に適用する。
+
+### 3. 明るい背景の `--text-light` は contrast 4.5:1 を必ず確認
+
+プリセットによっては `--text-light`（#7A746C 等）が `--bg`（#F9F5F0 等）に対して contrast 4.26 と微妙に WCAG AA を満たさないケースがある。**新しいプリセットを使う際は必ず axe-core / Lighthouse で contrast を検証**し、不足する場合はサイト側で `--text-light` を局所的に暗くする：
+
+```css
+:root {
+  --text-light: #6A655F; /* preset の値より暗くする */
+}
+```
+
+長期的にはプリセット側を v1.8 と同様に修正する。
+
+---
+
+## 2カラムレイアウトルール（必須）
+
+### 4. 2カラムは `align-items: stretch` 必須
+
+左右カラムの高さが揃わないと右カラムが空中に浮いて見えるため、grid/flex の 2カラム構造には `align-items: stretch`（grid のデフォルト）を必ず維持する。`align-items: start` を 2カラムに使うと右カラムが上端にだけ貼り付いて中央以下が空白になる。
+
+```css
+.two-col-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 24px;
+  align-items: stretch; /* デフォルトだが明示する */
+}
+```
+
+### 5. 右カラムが空白で浮く配置は禁止
+
+左カラムに長文・タイムライン等の縦長コンテンツ、右カラムに小さなカード1枚という構成で、右カラムが上端だけに置かれて下半分が空白になる配置は不可。以下のいずれかで解決：
+
+- 右カラムに補足画像・関連情報・CTA を追加して縦の長さを揃える
+- `align-self: center` で右カラムを中央寄せして「意図的な空白」に変える
+- カラム配分を見直して右カラムをワイドにする
+- 縦長すぎる場合は2カラムをやめて1カラム縦並びに切り替える
+
+`grid` の暗黙的な空き領域が「未完成感」を出すため、空白は必ず設計上の意図を持たせる。
