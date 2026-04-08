@@ -61,9 +61,14 @@ lp-salon と同じ構成（Hero〜Footer）。
 
 lp-salon と同一。SKILL.md のプラン別制約表を参照。
 
+## 3モデル振り分け（v2.1）
+
+→ lp-salon SKILL.md と同じ。HTML/CSS/JS生成は Codex、視覚チェック・写真判定・データ整形は Kimi K2.5、計画・最終承認は Claude Code。3モデル共通ルールは `.claude/shared-context.md` を参照。
+
 ## Codexへの指示テンプレート
 
 ```
+【共通ルール】.claude/shared-context.md と AGENTS.md に従うこと
 【セクション名】{セクション}
 【プリセット】{カラープリセット名}
 【パターン】{選択されたパターン}
@@ -76,6 +81,7 @@ lp-salon と同一。SKILL.md のプラン別制約表を参照。
 - ダーク背景前提（ライト×カジュアル選択時を除く）
 - CSS変数を使用。ハードコードしない
 - border-radius: 0px（var(--r): 0px）
-- 全imgにalt（日本語）、width、height、loading="lazy"（ヒ���ロー除く）
+- 全imgにalt（日本語）、width、height、loading="lazy"（ヒーロー除く）
 - Inter/Arial/Roboto/Helvetica禁止
+- セクション間 padding：Desktop 120px / Tablet 80px / Mobile 72px
 ```

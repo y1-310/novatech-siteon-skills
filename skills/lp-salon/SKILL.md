@@ -18,20 +18,32 @@ salon-interview から業態判定「美容室」で呼び出される。
 プレミアム   → 上記 + multipage.md + premium.md
 ```
 
-## 生成フロー
+## 生成フロー（v2.1：3モデル体制）
 
 ```
-1. ヒアリングJSON受け取り
-2. プラン判定（Q0.5）
-3. カラープリセット決定（Q13×Q14）
-4. 各セクションのパターン決定（Q15, Q16, Q17, Q17.5, Q9.5, Q12）
-5. オプションセクションのON/OFF（Q18）
-6. 参照ファイル読み込み（プラン別）
-7. Codexにセクション単位で指示→生成
-8. 結合→品質チェック（rules.md準拠）
-9. /seo-check + /web-design-reviewer + Lighthouse
-10. プレビュー提示→修正ループ
+1. ヒアリングJSON受け取り（Kimi K2.5 がGoogleフォーム回答→JSON変換した場合あり）
+2. プラン判定（Q0.5）                                           ← Claude Code
+3. カラープリセット決定（Q13×Q14）                               ← Claude Code
+4. 各セクションのパターン決定（Q15, Q16, Q17, Q17.5, Q9.5, Q12） ← Claude Code
+5. オプションセクションのON/OFF（Q18）                          ← Claude Code
+6. 参照ファイル読み込み（プラン別） + shared-context.md         ← Claude Code
+7. Codexにセクション単位で指示→HTML/CSS/JS 生成                 ← Codex
+8. 結合→品質チェック（rules.md準拠）                            ← Claude Code
+9. /seo-check + /web-design-reviewer + Lighthouse              ← Kimi K2.5（マルチモーダル視覚チェック）
+10. クライアント写真の品質判定・撮り直しリスト                   ← Kimi K2.5（マルチモーダル）
+11. プレビュー提示→修正ループ                                   ← Claude Code
 ```
+
+## 3モデル振り分け（v2.1）
+
+| タスク | 担当 |
+|--------|------|
+| HTML/CSS/JS サイト生成・コンセプト文・キャッチコピー | **Codex**（質重視） |
+| デモサイトのスクショ視覚チェック / Lighthouse 結果の解析 / クライアント写真の品質判定 | **Kimi K2.5**（マルチモーダル） |
+| Googleフォーム回答→JSON変換 / サロンカルテ整形 | **Kimi K2.5**（量重視） |
+| 計画・振り分け・最終承認・git操作 | **Claude Code** |
+
+3モデル共通の理念・品質ルール・ブランドガイドラインは `.claude/shared-context.md` を参照する（Kimi K2.5 呼び出し時はスクリプトが自動注入、Codex は AGENTS.md 経由）。
 
 ## デザイン原則
 
@@ -59,14 +71,18 @@ salon-interview から業態判定「美容室」で呼び出される。
 | 10 | CTA | — | ダーク背景の予約誘導 |
 | 11 | Footer | — | ロゴ・SNS・コピーライト |
 
-### 共通演出要素
+### 共通演出要素・予約ボタン配置
 
-| 要素 | 仕様 |
-|------|------|
-| マーキーテキスト | Conceptセクション前後に配置。英字キャッチフレーズ無限スクロール。CSS animationのみ |
-| スクロールフェードイン | Intersection Observer。opacity 0→1 + translateY 12px→0。duration 0.7s |
-| ヘッダースクロール変化 | transparent → 半透明背景 + border-bottom + backdrop-filter blur |
-| モバイルスティッキーCTA | 画面下部に予約ボタン常時表示。padding-bottom追加 |
+→ `_common/components.md` を参照。lp-salon は共通仕様をそのまま使用する。
+
+主要項目（rules.md 準拠）：
+- マーキーテキスト（25s linear infinite / italic / 2回繰り返し）
+- スクロールフェードイン（Intersection Observer / opacity + translateY）
+- ヘッダースクロール変化（transparent → 半透明 + backdrop-filter blur）
+- モバイルスティッキーCTA（body に padding-bottom 追加必須）
+- **予約ボタン5箇所**：ヘッダーナビ内 / ヒーロー内 / メニューセクション下 / フッターCTA / モバイルスティッキー
+- セクション間 padding：Desktop 120px / Tablet 80px / **Mobile 72px**
+- セクション区切り線：1px solid var(--line)、max-width: var(--mw)
 
 ### オプションセクション
 
@@ -111,9 +127,10 @@ salon-interview から業態判定「美容室」で呼び出される。
 | アニメーション | 標準 | 標準 | カスタム |
 | OGP | テンプレート | テンプレート | Figmaカスタム |
 
-## Codexへの指示テンプレート
+## Codexへの指示テンプレート（HTML/CSS/JS 生成用）
 
 ```
+【共通ルール】.claude/shared-context.md と AGENTS.md に従うこと
 【セクション名】{セクション}
 【プリセット】{カラープリセット名}
 【パターン】{選択されたパターン}
@@ -127,4 +144,42 @@ salon-interview から業態判定「美容室」で呼び出される。
 - コメントは日本語
 - Inter/Arial/Roboto/Helvetica禁止
 - アニメーションはtransform+opacityのみ
+```
+
+## Kimi K2.5 への指示テンプレート（視覚チェック / 写真判定 / データ整形）
+
+### A. デモサイト視覚チェック（マルチモーダル）
+
+```
+【共通ルール】shared-context.md（システムプロンプトに自動注入済み）
+【入力】サイトのスクショ画像（desktop / mobile 両方）+ ヒアリングJSON
+【依頼】以下を5段階で評価し、改善点をリストアップ：
+  1. 余白バランス（セクション間 120px / mobile 72px は守られているか）
+  2. 写真の主役性（テキストが前面に出すぎていないか）
+  3. 彩度の抑制（ビビッドな色が混ざっていないか）
+  4. ナンバリング・区切り線の統一感
+  5. モバイル375pxでの崩れ
+出力フォーマット：
+  - スコア表（5項目 × 5段階）
+  - 修正必須項目（優先度順）
+  - 改善提案（任意）
+```
+
+### B. クライアント写真の品質判定（マルチモーダル）
+
+```
+【入力】クライアント提供写真フォルダ
+【依頼】各写真を以下の観点で判定：
+  - 用途分類（ヒーロー/内装/スタイル/スタッフ/施術風景）
+  - 採用可否（採用 / 要差し替え / 要トリミング）
+  - 理由（暗い・ブレ・私物映り込み・人物映り込み等）
+出力：採用リスト + 撮り直しリスト（撮影ガイド付き）
+```
+
+### C. Googleフォーム回答→JSON変換 / サロンカルテ整形
+
+```
+【入力】CSV or テキスト形式のフォーム回答
+【依頼】salon-interview スキルが想定する JSON スキーマに整形
+出力：clients/{ID}.json 形式
 ```

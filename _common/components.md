@@ -169,4 +169,4 @@ transparent → 半透明背景 + border-bottom + backdrop-filter blur
 |----------------|---------|---------|---------|
 | Desktop（1280px+） | 120px | 2〜3列 | 100vh |
 | Tablet（768px） | 80px | 1〜2�� | 100vh |
-| Mobile（375px） | 56px | 1列 | 100vh（min-height: 520px） |
+| Mobile（375px） | 72px | 1列 | 100vh（min-height: 520px） |

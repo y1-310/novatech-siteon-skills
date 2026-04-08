@@ -144,6 +144,18 @@ Footer
 
 ## 共通ルール
 
+### CSS/JS の分離（プロ・プレミアムのみ可）
+
+スタンダードは単一HTML（rules.md #29）だが、プロ以上の複数ページ構成では共通スタイル・スクリプトの重複を避けるため外部ファイル化を許可する。
+
+```
+assets/
+├── styles.css   ← 全ページ共通CSS（CSS変数定義 + コンポーネント）
+└── scripts.js   ← 全ページ共通JS（fade-in / nav-toggle / tabs）
+```
+
+各ページの `<head>` から相対パスで読み込む。`preload` でフォントと styles.css を先読み。
+
 ### canonical URL
 全ページに設定。
 ```html
