@@ -156,6 +156,47 @@ NovaTechの「商品」はデモサイトそのもの。モックアップが最
 | 2 | 契約後 | placehold.co + 写真撮影ガイド送付 |
 | 3 | 本番 | クライアント撮影写真に差し替え |
 
+## 8.5 デモサイト生成時の画像選定フロー
+
+デモサイト（Phase 1: デモ提示）を生成する際、以下のフローで画像を選定・埋め込む。
+
+### フロー
+
+1. `sections.md` の `{画像}` プレースホルダーを確認
+2. そのセクションの写真の「役割」（空気/証拠/技術/人物）を特定
+3. 業態別の写真トーン・構図（セクション6）を確認
+4. 下記の検索キーワードでUnsplash/Pexelsを検索
+5. 色温度・トーンがdesign-system.mdのCSS変数と合う写真を選定
+6. URL形式: `https://images.unsplash.com/photo-{id}?w={width}&h={height}&fit=crop&auto=format`
+7. alt属性を日本語で記述（30文字以内・具体的・体言止め）
+
+### 業態別 Unsplash 検索キーワード
+
+| 業態 | 検索キーワード例 |
+|------|---------------|
+| lp-salon | `hair salon interior`, `hairstyle woman`, `salon tools`, `dried flowers`, `natural light salon` |
+| lp-barber | `barber shop`, `barbershop tools`, `mens haircut`, `straight razor`, `leather barber chair` |
+| lp-nail-esthe | `nail art`, `nail salon`, `gel nails`, `spa treatment`, `beauty salon pastel` |
+| lp-restaurant | `restaurant dish`, `bistro interior`, `cooking chef`, `wine glass`, `bread bakery` |
+| lp-architect | `modern house exterior`, `interior design minimal`, `architecture detail`, `natural light room`, `concrete texture` |
+| lp-corporate | `business portrait smile`, `office professional`, `tax accountant`, `legal office`, `business meeting` |
+
+### 色温度の合わせ方
+
+- design-system.mdの `--bg` の色温度を基準にする
+- 暖色系（#F9F5F0等）→ 暖色の写真を選ぶ
+- 寒色系（#F5F7FA等）→ ニュートラル〜寒色の写真を選ぶ
+- 同一サイト内で暖色と寒色の写真を混ぜない
+
+### 注意
+
+- スタッフ写真・代表者写真にはUnsplashのモデル写真を使用する（架空のデモサイトであることを明記する前提）
+- 料理写真・建築写真にはUnsplashの実写真を使用可能（デモ用途のため）
+- AI生成写真は使用禁止（デモサイトでも）
+- デモサイトのfooterに「※ 写真はイメージです」を追記する
+
+---
+
 ## 9. 技術仕様
 
 ヒーロー：1920×1080px以上。セクション：800×600px以上。ギャラリー：600×600px or 600×800px。OGP：1200×630px。圧縮：WebP 80%・200KB以下。loading="lazy"（ヒーロー除く）。width/height必須。alt属性：日本語・30文字以内。

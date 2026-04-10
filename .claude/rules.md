@@ -26,7 +26,7 @@
 16. フォームのlabelとinputを紐付ける
 17. noscript対応を実装する（フェードイン→常時表示 / ナビ→フル表示 / マーキー→静止 / タブ→全展開）
 
-## 4. CSS品質（12項目）
+## 4. CSS品質（13項目）
 
 18. CSS変数を統一使用する（--bg / --bg-alt / --bg-dark / --text / --text-mid / --text-light / --accent / --line / --r）
 19. CSS変数の値をハードコードしない
@@ -40,53 +40,54 @@
 27. !important は使用禁止（noscript内を除く）
 28. 日本語フォントの全ウェイト読み込み禁止（最大3ウェイト：300/400/500）
 29. CSS/JSの外部ファイル分離禁止（スタンダード時）
+31. word-break: keep-all を適用する要素は、親コンテナの幅制限を確認する。狭いカード（300px以下）内では overflow-wrap: anywhere を併用する。テキストカードのグリッドは最大3列。
 
 ## 5. アクセシビリティ（8項目）
 
-30. スキップナビゲーションを設置する
-31. aria-expanded・aria-label を適切に設定する
-32. フォーカストラップを実装する（モーダル・メニュー）
-33. focus-visible を設定する
-34. コントラスト比 4.5:1 以上（WCAG 2.1 AA準拠）
-35. タップターゲット 44px 以上
-36. 色だけに依存しない情報伝達
-37. フォームにlabel紐付け必須
+31. スキップナビゲーションを設置する
+32. aria-expanded・aria-label を適切に設定する
+33. フォーカストラップを実装する（モーダル・メニュー）
+34. focus-visible を設定する
+35. コントラスト比 4.5:1 以上（WCAG 2.1 AA準拠）
+36. タップターゲット 44px 以上
+37. 色だけに依存しない情報伝達
+38. フォームにlabel紐付け必須
 
 ## 6. パフォーマンス（6項目）
 
-38. Lighthouse 全項目 90点以上を目標とする
-39. Google Fonts に preconnect を設定する
-40. font-display: swap を必ず設定する
-41. 日本語フォントは最大3ウェイトまで
-42. fallbackフォントスタック必須
-43. ヒーロー画像以外は loading="lazy"
+39. Lighthouse 全項目 90点以上を目標とする
+40. Google Fonts に preconnect を設定する
+41. font-display: swap を必ず設定する
+42. 日本語フォントは最大3ウェイトまで
+43. fallbackフォントスタック必須
+44. ヒーロー画像以外は loading="lazy"
 
 ## 7. SEO（7項目）
 
-44. JSON-LD 構造化データを設定する（業態別 @type：HairSalon / BarberShop / NailSalon / BeautySalon）
-45. openingHoursSpecification / geo / aggregateRating / hasMap / FAQPage を含める
-46. OGP 4種（og:title / og:description / og:image / og:url）+ twitter:card を設定する
-47. canonical URL を設定する（マルチページ時）
-48. title パターン：`[サロン名]｜[エリア名] [最寄り駅]の[業態]｜[特徴キーワード]`
-49. meta description を設定する
-50. viewport を設定する
+45. JSON-LD 構造化データを設定する（業態別 @type：HairSalon / BarberShop / NailSalon / BeautySalon）
+46. openingHoursSpecification / geo / aggregateRating / hasMap / FAQPage を含める
+47. OGP 4種（og:title / og:description / og:image / og:url）+ twitter:card を設定する
+48. canonical URL を設定する（マルチページ時）
+49. title パターン：`[サロン名]｜[エリア名] [最寄り駅]の[業態]｜[特徴キーワード]`
+50. meta description を設定する
+51. viewport を設定する
 
 ## 8. NovaTech/SITEON共通（14項目）
 
-51. 予約ボタンを5箇所に配置する（ヘッダーナビ内 / ヒーロー内 / メニューセクション下 / フッターCTA / モバイルスティッキー）
-52. モバイルスティッキーCTA + padding-bottom を設定する
-53. セクション区切り線：1px solid var(--line)、max-width: var(--mw)
-54. セクションナンバリング表記を統一する（01, 02, 03...）
-55. マーキーテキスト：テキスト2回繰り返し、CSS animation（25s linear infinite）、ディスプレイフォント italic
-56. 料金は税込表記で統一する
-57. tel: リンクを設定する（電話番号）
-58. noscript対応を実装する
-59. prefers-reduced-motion に対応する
-60. 写真が主役 — テキストは添え物
-61. 余白で語る — 十分な余白を確保する
-62. ストーリーで巻き込む — 哲学・想いを詩的に語る
-63. プライバシーポリシーページ（フォーム設置時必須）
-64. 特定商取引法表記（EC時必須）
+52. 予約ボタンを5箇所に配置する（ヘッダーナビ内 / ヒーロー内 / メニューセクション下 / フッターCTA / モバイルスティッキー）
+53. モバイルスティッキーCTA + padding-bottom を設定する
+54. セクション区切り線：1px solid var(--line)、max-width: var(--mw)
+55. セクションナンバリング表記を統一する（01, 02, 03...）
+56. マーキーテキスト：テキスト2回繰り返し、CSS animation（25s linear infinite）、ディスプレイフォント italic
+57. 料金は税込表記で統一する
+58. tel: リンクを設定する（電話番号）
+59. noscript対応を実装する
+60. prefers-reduced-motion に対応する
+61. 写真が主役 — テキストは添え物
+62. 余白で語る — 十分な余白を確保する
+63. ストーリーで巻き込む — 哲学・想いを詩的に語る
+64. プライバシーポリシーページ（フォーム設置時必須）
+65. 特定商取引法表記（EC時必須）
 
 ## 9. 日本語コピー品質（15項目）
 
