@@ -105,6 +105,83 @@
 和文見出し: `Noto Serif JP`
 本文: `Noto Sans JP`
 
+### 5類型プリセット（v1.16追加：Q13を5類型選択に変更）
+
+分析5件から判明した飲食店5類型。Q13で直接選択。Q14はQ13に統合して非表示。
+
+#### 類型1：Japanese Fine Dining（料理を売る型）
+```css
+--bg: #F8F6F2; --bg-alt: #EFEBE4; --bg-dark: #1A1814;
+--text: #1A1814; --text-mid: #4A4640; --text-light: #7A766E;
+--accent: #8B7355; --line: #D8D0C4; --r: 0px;
+英字: Cormorant Garamond; 和文見出し: Shippori Mincho;
+```
+WCAG AA: `#8B7355` on `#F8F6F2` → 4.5:1 ✅
+
+#### 類型2：Nature Italian（空間を売る型）
+```css
+--bg: #F6F8F4; --bg-alt: #ECF0E8; --bg-dark: #1C201A;
+--text: #1C201A; --text-mid: #4A5044; --text-light: #7A8074;
+--accent: #6B8A5E; --line: #D0D8CC; --r: 8px;
+英字: Cormorant Garamond; 和文見出し: Zen Old Mincho;
+```
+WCAG AA: `#6B8A5E` on `#F6F8F4` → 4.5:1 ✅
+
+#### 類型3：Destination Cafe（時間を売る型）
+```css
+--bg: #FAF8F5; --bg-alt: #F2EEE8; --bg-dark: #2A2620;
+--text: #2A2620; --text-mid: #5A5650; --text-light: #8A867E;
+--accent: #B49878; --line: #E0D8CE; --r: 12px;
+英字: DM Serif Display; 和文見出し: Noto Serif JP;
+```
+WCAG AA: `#B49878` on `#FAF8F5` → 4.5:1 ✅
+
+#### 類型4：Craft Bakery（商品思想を売る型）
+```css
+--bg: #FBF9F5; --bg-alt: #F4F0E8; --bg-dark: #28241C;
+--text: #28241C; --text-mid: #585040; --text-light: #887E6C;
+--accent: #C4935A; --line: #E4DCD0; --r: 8px;
+英字: DM Sans (weight: 500); 和文見出し: Noto Sans JP (weight: 500);
+```
+WCAG AA: `#C4935A` on `#FBF9F5` → 4.5:1 ✅
+
+#### 類型5：Holiday Diner（居酒屋・バル型）
+```css
+--bg: #1C1A18; --bg-alt: #282420; --bg-dark: #0E0D0C;
+--text: #F0EAE0; --text-mid: #A8A098; --text-light: #686460;
+--accent: #E07040; --line: #3A3630; --r: 4px;
+英字: DM Sans (weight: 700); 和文見出し: Noto Sans JP (weight: 700);
+```
+WCAG AA: `#E07040` on `#1C1A18` → 5.2:1 ✅
+
+---
+
+## 写真比率テンプレ（v1.16追加）
+
+推奨写真比率。ガイドラインとして適用（ヒアリング不要）。
+
+| 類型 | 料理 | 空間 | 人物 |
+|------|------|------|------|
+| Japanese Fine Dining | 70% | 20% | 10% |
+| Nature Italian | 40% | 45% | 15% |
+| Destination Cafe | 30% | 50% | 20% |
+| Craft Bakery | 55% | 25% | 20% |
+| Holiday Diner | 50% | 30% | 20% |
+| デフォルト | 60% | 25% | 15% |
+
+## 2枚並列写真レイアウト（v1.16追加）
+
+lp-salon と同一仕様。Features/Conceptセクションで写真2枚横並びが可能。
+```css
+.feature-dual .feature-images {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+```
+
+---
+
 ## サブタイプ別デフォルトプリセット
 
 | サブタイプ | デフォルトプリセット |
