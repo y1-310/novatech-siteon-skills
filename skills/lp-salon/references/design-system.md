@@ -38,6 +38,38 @@ lp-salon は4プリセット：グレージュ × モード / ナチュラル ×
 - JSON-LD（HairSalon）に openingHoursSpecification / geo / aggregateRating / hasMap を含める
 - FAQ 設置時は FAQPage を併記
 
+## レイアウトバリエーション
+
+### 2枚並列写真レイアウト（Featuresセクション用）
+
+Featuresの各こだわりブロックで、写真を2枚横並びに配置できるバリエーション。
+
+```css
+/* 2枚並列写真 */
+.feature-dual .feature-images {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+
+.feature-dual .feature-images img {
+  aspect-ratio: 1 / 1; /* or 3 / 4 */
+  object-fit: cover;
+  width: 100%;
+  height: auto;
+}
+
+/* モバイルでも2枚並列を維持 */
+@media (max-width: 768px) {
+  .feature-dual .feature-images {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+```
+
+- ブロックごとに単写真型（`.feature-item`）と2枚並列型（`.feature-dual`）を混在可能
+- Agentが写真素材の状況を見て自動判断（写真が豊富→一部に適用、少ない→全て単写真）
+
 ## フォント読み込みテンプレート
 
 ```html
