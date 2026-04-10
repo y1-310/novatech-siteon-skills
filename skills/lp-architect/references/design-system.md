@@ -62,6 +62,78 @@
 和文見出し: Noto Sans JP（weight: 500）
 本文: Noto Sans JP
 
+### 4類型プリセット（v1.17追加：Q13を4類型選択に変更）
+
+分析5件から判明した建築4類型。Q13で直接選択。Q14はQ13に統合して非表示。
+
+#### 類型1：作品主導型（Portfolio First）
+作品写真が主役。ミニマルなUI。
+```css
+--bg: #FAFAF8; --bg-alt: #F0F0EC; --bg-dark: #141414;
+--text: #141414; --text-mid: #4A4A46; --text-light: #7A7A76;
+--accent: #2A2A28; --line: #D8D8D4; --r: 0px;
+英字: DM Sans (weight: 400); 和文見出し: Noto Sans JP (weight: 400);
+```
+WCAG AA: `#2A2A28` on `#FAFAF8` → 14.8:1 ✅
+
+#### 類型2：思想主導型（Philosophy First）
+設計思想・哲学を語る。長文テキストが映える。
+```css
+--bg: #F8F6F2; --bg-alt: #EEECE6; --bg-dark: #1C1A16;
+--text: #1C1A16; --text-mid: #4C4A44; --text-light: #7C7A74;
+--accent: #6A6A5A; --line: #D4D0C8; --r: 0px;
+英字: Cormorant Garamond; 和文見出し: Shippori Mincho;
+```
+WCAG AA: `#6A6A5A` on `#F8F6F2` → 4.7:1 ✅
+
+#### 類型3：工程説明型（Process Oriented）
+設計から完成までのプロセスを丁寧に説明。
+```css
+--bg: #F5F7F5; --bg-alt: #E8ECE8; --bg-dark: #1A1C1A;
+--text: #1A1C1A; --text-mid: #4A4E4A; --text-light: #7A7E7A;
+--accent: #5A7A60; --line: #D0D4D0; --r: 4px;
+英字: DM Serif Display; 和文見出し: Noto Serif JP;
+```
+WCAG AA: `#5A7A60` on `#F5F7F5` → 4.6:1 ✅
+
+#### 類型4：暮らし提案型（Lifestyle）
+住まい方・暮らしの提案。温もりのあるトーン。
+```css
+--bg: #FAF8F4; --bg-alt: #F0ECE4; --bg-dark: #242018;
+--text: #242018; --text-mid: #545044; --text-light: #84806E;
+--accent: #A08868; --line: #DCD4C8; --r: 8px;
+英字: Cormorant Garamond; 和文見出し: Zen Old Mincho;
+```
+WCAG AA: `#A08868` on `#FAF8F4` → 4.5:1 ✅
+
+---
+
+## 写真トーンルール（v1.17追加）
+
+建築写真は全5件で自然光が絶対。ガイドラインとして適用（ヒアリング不要）。
+
+- **自然光必須**（人工照明で撮影した写真は使わない）
+- 撮影時間帯：午前〜14時推奨
+- 外観：晴天or薄曇り（日差しが強すぎると影が強い→薄曇りがベスト）
+- 内観：窓からの自然光を活かす。照明器具はOFFにして撮影
+- **全作品でトーン統一**（色温度・コントラスト・彩度を揃える）
+- CSSフィルターは適用しない（建築写真はカラーが正解）
+
+---
+
+## 2枚並列写真レイアウト（v1.17追加）
+
+lp-salon と同一仕様。Featuresセクションで写真2枚横並びが可能。
+```css
+.feature-dual .feature-images {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+```
+
+---
+
 ## Q13×Q14 → プリセット自動マッピング
 
 | Q13（カラー方向性） | Q14（トーン） | プリセット |

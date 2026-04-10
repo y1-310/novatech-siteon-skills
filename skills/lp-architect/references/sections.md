@@ -75,6 +75,55 @@
 
 ---
 
+## ヒーロー直下CTA（オプション：Q18選択時）【v1.17追加】
+
+ボタン構成：**お問い合わせ → 施工事例を見る**（建築は「予約」ではなく「問い合わせ」）
+デフォルト：ON。
+
+```html
+<div class="hero-cta-bar">
+  <p class="hero-cta-text">まずはお気軽にご相談ください</p>
+  <div class="hero-cta-buttons">
+    <a href="#contact" class="btn btn-cta-bar">お問い合わせ</a>
+    <a href="#works" class="btn btn-cta-bar-outline">施工事例を見る</a>
+  </div>
+</div>
+```
+
+---
+
+## 建築家紹介（Architect Profile）（オプション：Q18選択時）【v1.17追加】
+
+```html
+<section id="architect" class="section">
+  <span class="section-number">{動的}</span>
+  <h2 class="section-title" lang="en">Architect</h2>
+  <p class="section-subtitle">建築家について</p>
+
+  <div class="architect-content">
+    <div class="architect-photo">
+      <img src="{自然光ポートレート}" alt="{名前}" width="400" height="533" loading="lazy">
+    </div>
+    <div class="architect-text">
+      <h3>{名前}<span class="architect-role">{肩書き}</span></h3>
+      <div class="architect-story">
+        <p>{経歴 / 設計思想 / 受賞歴 / 所属学会 / 資格 3〜5段落}</p>
+      </div>
+      <dl class="architect-credentials">
+        <dt>資格</dt><dd>{一級建築士等}</dd>
+        <dt>受賞歴</dt><dd>{受賞歴}</dd>
+      </dl>
+    </div>
+  </div>
+</section>
+```
+
+- 写真：自然光ポートレート推奨（分析5/5件で自然光）
+- **デフォルト：ON（おすすめ）** — 「誰が設計するか」が最大の判断材料
+- 組織設計で個人を出したくない場合→OFF
+
+---
+
 ## 2. Philosophy / Concept（ナンバリング: 01）
 
 ### パターンA：設計思想を端的に見せる（Kocochi型）
@@ -266,28 +315,44 @@
 
 ---
 
-## 5. Flow（ナンバリング: 04）
+## 5. Flow（ナンバリング: 04）— **必須セクション**【v1.17強化】
+
+分析5/5件で掲載。「相談してから完成まで何が起こるか」が見えないと問い合わせに至らない。
+**デフォルト：ON（必須扱い）。** オーナーが明示的に不要と言わない限りON。
 
 ```html
 <section id="flow" class="section">
   <span class="section-number">04</span>
   <h2 class="section-title" lang="en">Flow</h2>
-  <p class="section-subtitle">家づくりの流れ</p>
+  <p class="section-subtitle">設計の流れ</p>
 
   <ol class="flow-list">
     <li class="flow-item">
       <span class="flow-number" lang="en">01</span>
       <h3>{ステップ名}</h3>
       <p>{説明文}</p>
+      <span class="flow-duration">{所要期間の目安（任意）}</span>
     </li>
-    <!-- 5〜8ステップ -->
+    <!-- 7〜9ステップ -->
   </ol>
 </section>
 ```
 
+デフォルトステップ（7〜9）：
+1. お問い合わせ・ご相談（無料）
+2. ヒアリング・現地調査
+3. プラン提案・概算見積もり
+4. 基本設計
+5. 実施設計
+6. 確認申請
+7. 施工（工務店選定〜監理）
+8. 完成・お引き渡し
+9. アフターサポート
+
 仕様：
-- 5〜8ステップ
-- 相談から引き渡しまでの流れを図解
+- ステップ数はオーナー意向で増減可（最小5、最大10）
+- 各ステップの所要期間は「記載する/しない」をオーナーが選択
+- 写真は任意（なくても成立するセクション）
 
 ---
 
@@ -389,10 +454,59 @@
 
 ---
 
-## オプションセクション
+## Cost / Fee Notes（オプション：Q18選択時）【v1.17追加】
+
+Q18「設計料について」選択時に追加質問：「費用の表示方法は？」（具体比率型 / 目安誘導型 / おまかせ）
+
+### パターン1：具体比率型
+```html
+<section id="fee" class="section">
+  <span class="section-number">{動的}</span>
+  <h2 class="section-title" lang="en">Fee</h2>
+  <p class="section-subtitle">設計料について</p>
+  <div class="fee-content">
+    <p>設計監理料は総工費の10〜15%が目安です。</p>
+    <p class="fee-note">※初回ご相談は無料です。お気軽にお問い合わせください。</p>
+    <dl class="fee-faq">
+      <dt>設計料の内訳は？</dt><dd>{回答}</dd>
+      <dt>追加費用は？</dt><dd>{回答}</dd>
+    </dl>
+  </div>
+</section>
+```
+
+### パターン2：目安誘導型
+```html
+<section id="fee" class="section">
+  <span class="section-number">{動的}</span>
+  <h2 class="section-title" lang="en">Fee</h2>
+  <p class="section-subtitle">設計料について</p>
+  <div class="fee-content">
+    <p>過去の事例では○○万円〜のプロジェクトが多いです。</p>
+    <p>まずはお気軽にご相談ください。</p>
+    <a href="#contact" class="btn btn-primary">無料相談を申し込む</a>
+  </div>
+</section>
+```
+
+デフォルト：OFF（費用を公開したくない事務所も多い）
+
+---
+
+## 口コミ全文カード型（オプション：Q18選択時、プロ以上）【v1.17追加】
+
+lp-salon と同一仕様。建築では「お客様の声」としてプロジェクト完了後の感想を掲載。
+
+---
+
+## オプションセクション一覧（v1.17更新）
 
 | セクション | 条件 | 仕様 |
 |-----------|------|------|
+| ヒーロー直下CTA【NEW】 | Q18選択（デフォルトON） | お問い合わせ＋施工事例を見る |
+| 建築家紹介【NEW】 | Q18選択（デフォルトON） | 経歴・設計思想・資格・受賞歴 |
+| 設計料について【NEW】 | Q18選択 | 具体比率型 or 目安誘導型 |
+| 口コミ全文カード型【NEW】 | Q18選択（プロ以上） | お客様の声 |
 | Fee / Price | Q18選択時 | 設計料目安（工事金額の○% 等） |
 | Blog / Column | Q18選択時 | 記事一覧＋カテゴリ |
 | Awards | Q18選択時 | 受賞一覧（年・名称・主催） |
