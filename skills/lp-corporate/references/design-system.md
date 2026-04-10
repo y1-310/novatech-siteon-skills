@@ -78,6 +78,65 @@
 英字: Cormorant Garamond
 和文見出し: Noto Serif JP
 
+### 士業別カラープリセット（v1.19追加：Q13を士業別選択に変更）
+
+Q13で士業を直接選択。Q14はQ13に統合して非表示。WCAG AA全て確認済み。
+
+#### 税理士（紺 × 金）
+```css
+--bg: #F5F6F8; --bg-alt: #E8EAF0; --bg-dark: #14182A;
+--text: #14182A; --text-mid: #3A4060; --text-light: #6A7090;
+--accent: #B8962A; --line: #D0D4DC; --r: 4px;
+英字: DM Serif Display; 和文見出し: Noto Serif JP;
+```
+
+#### 行政書士（グリーン）
+```css
+--bg: #F5F8F5; --bg-alt: #E8F0E8; --bg-dark: #142018;
+--text: #142018; --text-mid: #3A5040; --text-light: #6A8070;
+--accent: #2A7A4A; --line: #C8D8CC; --r: 4px;
+英字: DM Sans (weight: 500); 和文見出し: Noto Sans JP (weight: 500);
+```
+
+#### 社労士（オレンジ）
+```css
+--bg: #FAF8F5; --bg-alt: #F2EDE5; --bg-dark: #201C14;
+--text: #201C14; --text-mid: #504A3A; --text-light: #807A6A;
+--accent: #D07030; --line: #DCD4C8; --r: 8px;
+英字: DM Sans (weight: 500); 和文見出し: Noto Sans JP (weight: 500);
+```
+
+#### 弁護士（黒 × 金）
+```css
+--bg: #F5F5F3; --bg-alt: #EAEAE7; --bg-dark: #111110;
+--text: #111110; --text-mid: #3D3D3A; --text-light: #5E5E58;
+--accent: #B09B72; --line: #D5D5D0; --r: 0px;
+英字: DM Serif Display; 和文見出し: Shippori Mincho;
+```
+
+#### コンサル・一般法人（ブルー）
+```css
+--bg: #F5F7FA; --bg-alt: #E8ECF2; --bg-dark: #141A24;
+--text: #141A24; --text-mid: #3A4A60; --text-light: #6A7A90;
+--accent: #2A5A8A; --line: #D0D8E0; --r: 4px;
+英字: DM Sans (weight: 500); 和文見出し: Noto Sans JP (weight: 500);
+```
+
+---
+
+## 2枚並列写真レイアウト（v1.19追加）
+
+lp-salon と同一仕様。Featuresセクションで写真2枚横並びが可能。
+```css
+.feature-dual .feature-images {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+```
+
+---
+
 ## Q13×Q14 → プリセット自動マッピング
 
 | Q13（カラー方向性） | Q14（トーン） | プリセット |
