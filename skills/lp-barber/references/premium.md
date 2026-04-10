@@ -35,6 +35,7 @@ lp-salon と同一。
 バーバー固有：ダーク背景で映えるアニメーション。
 - ゴールドのアクセントラインが左から右に流れる
 - 写真のビネット効果（CSS box-shadow inset）
+- **パララックスエフェクト**（v1.18追加）：`background-attachment: fixed` をFeatures背景写真またはセクション間全幅写真ブロックに適用（最大2箇所）。iOS Safari フォールバック + prefers-reduced-motion 対応必須
 
 ## OGP画像
 
