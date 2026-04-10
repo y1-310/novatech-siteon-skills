@@ -138,3 +138,23 @@
 |------|------|
 | 画像カード、ボタン、タグ、予約導線 | 角丸はすべて `--r` を使う。 |
 | `--r: 0px` のプリセット | 直線的な印象を維持し、影も控えめにする。 |
+
+```css
+
+/* 日本語改行制御（japanese-copy-guide.md 準拠） */
+h1, h2, h3,
+.hero-copy,
+.concept-text,
+.section-title {
+  word-break: keep-all;
+  overflow-wrap: break-word;
+}
+
+h1, .hero-copy {
+  max-width: 18em;
+}
+
+h2 {
+  max-width: 22em;
+}
+```

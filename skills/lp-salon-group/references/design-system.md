@@ -44,3 +44,23 @@ lp-salon-group は1プリセットのみ：「コーポレート × クリーン
 - ヘッダー・フッターはグループ共通デザイン
 - ナビゲーションにグループトップへのリンク
 - 色味はグループカラーをベースに、各店舗で微調整可能
+
+```css
+
+/* 日本語改行制御（japanese-copy-guide.md 準拠） */
+h1, h2, h3,
+.hero-copy,
+.concept-text,
+.section-title {
+  word-break: keep-all;
+  overflow-wrap: break-word;
+}
+
+h1, .hero-copy {
+  max-width: 18em;
+}
+
+h2 {
+  max-width: 22em;
+}
+```

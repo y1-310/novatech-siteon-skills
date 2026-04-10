@@ -142,3 +142,23 @@
 ```
 
 ※日本語フォントは最大3ウェイト。fallbackスタック必須。
+
+```css
+
+/* 日本語改行制御（japanese-copy-guide.md 準拠） */
+h1, h2, h3,
+.hero-copy,
+.concept-text,
+.section-title {
+  word-break: keep-all;
+  overflow-wrap: break-word;
+}
+
+h1, .hero-copy {
+  max-width: 18em;
+}
+
+h2 {
+  max-width: 22em;
+}
+```

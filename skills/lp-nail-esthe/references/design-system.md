@@ -38,3 +38,23 @@ lp-salon と同一。ただし JSON-LD の @type は業態で分岐：
 - ギャラリーのグリッド：4列（desktop）/ 3列（tablet）/ 2列（mobile）
 - border-radius は丸め（var(--r): 8px〜12px）
 - フェミニンなトーンだが、甘すぎない上品さを保つ
+
+```css
+
+/* 日本語改行制御（japanese-copy-guide.md 準拠） */
+h1, h2, h3,
+.hero-copy,
+.concept-text,
+.section-title {
+  word-break: keep-all;
+  overflow-wrap: break-word;
+}
+
+h1, .hero-copy {
+  max-width: 18em;
+}
+
+h2 {
+  max-width: 22em;
+}
+```
