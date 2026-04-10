@@ -38,6 +38,17 @@ lp-salon-group は1プリセットのみ：「コーポレート × クリーン
 - OGP：グループ用＋各店舗用をそれぞれ設定
 - canonical URL 全ページ設定
 
+## 2枚並列写真レイアウト（v1.15追加）
+
+lp-salon と同一仕様。各店舗ページのFeaturesセクションで写真2枚横並びが可能。
+```css
+.feature-dual .feature-images {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+```
+
 ## 各店舗ページのデザイン
 
 各店舗ページは lp-salon の構造を流用するが、以下を統一：

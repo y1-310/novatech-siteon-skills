@@ -20,6 +20,26 @@
 
 ---
 
+### ヒーロー直下CTA（オプション：Q18選択時）【v1.15追加】
+
+lp-salon と同一構造。グループトップ版の調整：
+- ボタン構成：**店舗を探す → HPB → LINE**
+- 「店舗を探す」ボタン → `#salons` へのアンカーリンク
+- デフォルト：ON（おすすめ）
+
+```html
+<div class="hero-cta-bar">
+  <p class="hero-cta-text">ご予約・店舗のご案内はこちら</p>
+  <div class="hero-cta-buttons">
+    <a href="#salons" class="btn btn-cta-bar">店舗を探す</a>
+    <a href="{HPB URL}" class="btn btn-cta-bar" target="_blank" rel="noopener">Hot Pepper で予約</a>
+    <a href="{LINE URL}" class="btn btn-cta-bar" target="_blank" rel="noopener">LINE で予約</a>
+  </div>
+</div>
+```
+
+---
+
 ### Concept（01）
 
 ```html
@@ -44,7 +64,36 @@
 
 ---
 
-### Salon List（02）— グループ固有
+### 代表メッセージ（オプション：Q18選択時）【v1.15追加】
+
+salon版 Owner Story をグループ向けに「Message」として調整。グループトップ（index.html）のみに配置。
+
+```html
+<section id="message" class="section">
+  <span class="section-number">{動的}</span>
+  <h2 class="section-title" lang="en">Message</h2>
+  <p class="section-subtitle">代表メッセージ</p>
+
+  <div class="message-content">
+    <div class="message-photo">
+      <img src="{代表写真}" alt="{代表名}" width="400" height="533" loading="lazy">
+    </div>
+    <div class="message-text">
+      <h3>{代表名}<span class="message-role">代表</span></h3>
+      <div class="message-body">
+        <p>{グループ全体の理念・ビジョン 3〜5段落}</p>
+      </div>
+    </div>
+  </div>
+</section>
+```
+
+- デフォルト：OFF
+- 各店舗ページには配置しない
+
+---
+
+### Salon List（02）— グループ固有【v1.15強化】
 
 ```html
 <section id="salons" class="section">
@@ -54,11 +103,12 @@
 
   <div class="salon-grid">
     <a href="yamato.html" class="salon-card">
-      <img src="{店舗写真}" alt="{店舗名}の外観" width="600" height="400" loading="lazy">
+      <img src="{店舗写真}" alt="{店舗名}の外観" width="600" height="338" loading="lazy">
       <div class="salon-card-info">
-        <h3>{店舗名}</h3>
+        <h3 lang="en">{店舗名英字}</h3>
+        <p class="salon-name-ja">{店舗名日本語}</p>
+        <p class="salon-catch">{キャッチコピー（1行）}</p>
         <p class="salon-area">{エリア・最寄り駅}</p>
-        <p class="salon-hours">{営業時間}</p>
         <span class="salon-link" lang="en">View More →</span>
       </div>
     </a>
@@ -68,9 +118,12 @@
 ```
 
 仕様：
-- 2〜3列グリッド（デスクトップ）
-- 各カードは店舗ページへのリンク
-- ホバーで画像を拡大（transform: scale(1.03)）
+- 各カード：店舗メイン写真（16:9横長）+ 店舗名 + キャッチコピー + エリア + 「この店舗を見る」ボタン
+- 2〜3列グリッド（デスクトップ）/ 1列（モバイル）
+- ホバーで画像にscale(1.02)＋オーバーレイ
+- 常にON（グループ必須セクション）
+- キャッチコピー・エリアはオーナー意向で省略可
+- 写真がない店舗は placehold.co
 
 ---
 
@@ -202,27 +255,62 @@
     </div>
 
     <a href="mailto:{採用メール}" class="btn btn-primary">応募する</a>
+    <!-- 採用専用ページ作成時（プロ以上）-->
+    <a href="recruit.html" class="btn btn-outline">採用について詳しく見る</a>
   </div>
 </section>
 ```
 
+### recruit.html（プロ以上で追加可能）【v1.15追加】
+
+Q18で「採用セクション」選択時の追加質問「採用専用ページを作成しますか？」→「はい」の場合に生成。
+
+構成：
+- グループ共通ヘッダー/フッター
+- 先輩スタッフの声（2〜3名）
+- 1日の流れ（タイムライン形式）
+- 給与・待遇詳細
+- 研修制度・キャリアパス
+- 応募フォーム or 外部リンク（Indeed等）
+- canonical URL・ナビゲーション追加必須
+
+オーナーが「採用はIndeed等で行っている」→ 外部リンクボタンのみに簡略化
+
 ---
 
-### CTA
+### CTA + エリア別店舗選択【v1.15追加】
 
 ```html
 <section class="section cta-section">
   <div class="container">
     <p class="cta-catch" lang="en">{英字キャッチ}</p>
     <p class="cta-sub">{日本語サブコピー}</p>
-    <div class="cta-salons">
-      <a href="yamato.html#reservation" class="btn btn-cta">{店舗名1}で予約</a>
-      <a href="turuma.html#reservation" class="btn btn-cta">{店舗名2}で予約</a>
-      <!-- 各店舗の予約リンク -->
+
+    <!-- エリア別店舗選択（Q18選択時・デフォルトON）-->
+    <div class="cta-area-select">
+      <p class="cta-area-label">エリアから探す</p>
+      <!-- 店舗4件以下：ボタン形式 -->
+      <div class="cta-salons">
+        <a href="yamato.html#reservation" class="btn btn-cta">{店舗名1}（{エリア}）</a>
+        <a href="turuma.html#reservation" class="btn btn-cta">{店舗名2}（{エリア}）</a>
+        <!-- 各店舗の予約リンク -->
+      </div>
+      <!-- 店舗5件以上：select形式 -->
+      <!--
+      <select class="cta-salon-select" onchange="location.href=this.value+'#reservation'">
+        <option value="">店舗を選ぶ</option>
+        <option value="yamato.html">{店舗名1}（{エリア}）</option>
+      </select>
+      -->
     </div>
   </div>
 </section>
 ```
+
+仕様：
+- 4件以下→ボタン形式で全店舗並列、5件以上→`<select>`で選択
+- Q18「エリア別店舗選択」でON/OFF。デフォルト：ON
+- 各ボタン/選択肢にエリア名を併記
 
 ---
 
@@ -252,6 +340,14 @@
 ## 各店舗ページ（yamato.html等）
 
 各店舗ページは **lp-salon のセクション構成を流用** する。
+
+### 各店舗ページのオプション（v1.15追加）
+
+lp-salon v1.13 の共通改修を各店舗ページに適用：
+- **口コミ全文カード型**（改修C）— 各店舗ページごとにON/OFF可。プロ以上
+- **One Day（来店の流れ）**（改修D）— 全店舗共通フロー or 個別定義。プロ以上
+- **2枚並列レイアウト**（改修E）— Featuresで写真2枚横並び。Agent自動判断
+- **予約UI 3点セット**（改修F）— HPB/LINE/電話/Instagram DM。Q9回答ベース
 
 ### 構成
 ```
