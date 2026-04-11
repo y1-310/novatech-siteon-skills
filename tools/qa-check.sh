@@ -39,6 +39,7 @@ echo "対象: ${TARGET}"
 run_check "① 画像URL疎通確認（404チェック）" "check-images.py"
 run_check "② 人物写真Unsplash使用チェック" "check-persons.py"
 run_check "③ ナビゲーション日本語チェック" "check-nav.py"
+run_check "④ CSSレイアウトチェック（img寸法・align-items・max-height）" "check-layout.py"
 
 echo ""
 echo "════════════════════════════════════════════════════════════"
