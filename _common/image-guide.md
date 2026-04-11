@@ -129,6 +129,8 @@ Codexへの指示では「ConceptセクションはP1で」のようにパター
 - 各物件で「外観」「内観」「ディテール」のいずれか1役割を割り当て
 - 物件ごとにトーン統一（全物件が同じ明度・彩度帯に収まること）
 - 住宅・店舗・集合住宅・リノベーション等、**種別のバリエーション**を持たせる
+- **地域スタイル規制（絶対禁止）**: 地中海/スペイン/イタリア/中東風の建築写真（白壁+青、プール付き邸宅等）は使用禁止。日本・東アジアに実在するスタイルの建築写真のみ使用すること
+- 検索時のNG単語: `villa`, `mediterranean`, `resort`, `tropical`, `spanish house`, `pool house`
 
 ### 6-6. lp-corporate
 
@@ -190,7 +192,7 @@ NovaTechの「商品」はデモサイトそのもの。モックアップが最
 | lp-barber | `barber shop`, `barbershop tools`, `mens haircut`, `straight razor`, `leather barber chair` |
 | lp-nail-esthe | `nail art`, `nail salon`, `gel nails`, `spa treatment`, `beauty salon pastel` |
 | lp-restaurant | `restaurant dish`, `bistro interior`, `cooking chef`, `wine glass`, `bread bakery` |
-| lp-architect | `modern house exterior`, `interior design minimal`, `architecture detail`, `natural light room`, `concrete texture` |
+| lp-architect | `japanese house exterior`, `japanese architecture minimal`, `wood concrete detail`, `natural light interior japan`, `japanese residential interior` |
 | lp-corporate | `business portrait smile`, `office professional`, `tax accountant`, `legal office`, `business meeting` |
 
 ### 色温度の合わせ方
@@ -251,14 +253,19 @@ NovaTechの「商品」はデモサイトそのもの。モックアップが最
 
 同一サイト内で暖色と寒色の写真を混在させない。
 
-### C. 人物写真ルール
+### C. 人物写真ルール（スタッフ・代表者写真）
 
-- **日本人・東アジア系の外見を必ず使用**
-  - Unsplashキーワード: `japanese woman`, `asian stylist`, `asian professional`, `japanese businesswoman`
-  - 見つからない場合はGemini生成を使用（Section 8.7参照）
+> ⚠️ **スタッフ・代表者写真にUnsplashを使用禁止**
+> Unsplashの日本人写真検索は信頼性が低く（外国人が混入する）、全て**Pollinations.aiで生成した画像を使用**する。
+
+- **生成先**: Pollinations.ai（無料・APIキー不要）
+  - 生成スクリプト: `/Users/satouyuuichi/Developer/generate-staff-photos.py` を参照
+  - エンドポイント: `https://image.pollinations.ai/prompt/{encoded_prompt}?width=400&height=500&model=flux&nologo=true`
+  - 必須プロンプト語句: `"photorealistic portrait of Japanese [woman/man]"` から始める
 - **過度に演出された"広告モデル"禁止**（自然な表情・シーンを選ぶ）
 - **スタッフ写真は全員異なる人物**（同一人物の別カット使い回し禁止）
-- **背景がブランドトーンと合うものを選ぶ**
+- **背景がブランドトーンと合うものを選ぶ**（白・サロン内装・オフィス）
+- **NG（絶対禁止）**: 白人・黒人・南アジア系の人物写真をスタッフ/代表者として使用すること
 
 ### D. セクション内容との一致ルール（最重要）
 
@@ -288,14 +295,16 @@ NovaTechの「商品」はデモサイトそのもの。モックアップが最
 
 ## 8.7 Gemini生成画像使用ガイドライン
 
-### 使用する場合（Gemini推奨シーン）
+### 使用する場合（AI生成推奨シーン）
 
-| シーン | 理由 |
-|--------|------|
-| スタッフ・人物写真（日本人指定） | Unsplashで東アジア系が極端に少ない |
-| 日本人×業態の接客シーン | 「日本人美容師とお客様」等はUnsplashでほぼ存在しない |
-| ブランドカラーに完全一致させたい背景・小物 | Unsplashでは色温度が合うものが限定的 |
-| 架空店舗の「内装イメージ」を特定雰囲気で作りたい | 実在店舗写真では過度に具体的になりすぎる |
+> ⚠️ **スタッフ・代表者写真はGemini/Pollinations.ai生成が原則**（Unsplash禁止 → Section 8.6 C参照）
+
+| シーン | ツール | 理由 |
+|--------|--------|------|
+| スタッフ・人物写真 | **Pollinations.ai** | Unsplashは外国人混入リスクがある。Section 8.6 Cのスクリプトで自動生成 |
+| 日本人×業態の接客シーン | Pollinations.ai | 「日本人美容師とお客様」等はUnsplashでほぼ存在しない |
+| ブランドカラーに完全一致させたい背景・小物 | Gemini or Pollinations.ai | Unsplashでは色温度が合うものが限定的 |
+| 架空店舗の「内装イメージ」を特定雰囲気で作りたい | Gemini | 実在店舗写真では過度に具体的になりすぎる |
 
 ### 使用しない場合（Unsplash優先）
 
@@ -312,18 +321,23 @@ NovaTechの「商品」はデモサイトそのもの。モックアップが最
 ```
 [必要な写真を定義]
         ↓
-人物が写っているか？
-  Yes → 日本人・東アジア系が必要か？
-          Yes → Unsplashで "japanese" / "asian" キーワード検索
-                  3件以内で見つかる？
-                    No  → Gemini生成（下記プロンプトルール参照）
-                    Yes → Unsplash使用
-          No  → Unsplash使用
-  No  → 料理・建築・自然・風景か？
-          Yes → Unsplash優先（Gemini禁止）
-          No  → Unsplashで3件以内に見つかる？
-                  No  → Gemini生成
-                  Yes → Unsplash使用
+スタッフ・代表者の人物写真か？
+  Yes → Pollinations.aiで生成（Unsplash禁止）
+          → generate-staff-photos.py を参照
+          → 「photorealistic portrait of Japanese [man/woman]...」プロンプトを使用
+  No  ↓
+日本人が写っている接客・人物シーンか？
+  Yes → Pollinations.ai / Gemini生成
+  No  ↓
+lp-architectのWorksセクションか？
+  Yes → 検索キーワードは "japanese house", "japanese architecture minimal" 等のみ
+          地中海/プール/villa系キーワード禁止
+  No  ↓
+料理・建築・自然・風景か？
+  Yes → Unsplash優先（AI生成禁止）
+  No  → Unsplashで3件以内に見つかる？
+          No  → Gemini/Pollinations.ai生成
+          Yes → Unsplash使用
 ```
 
 ### Geminiプロンプトルール
