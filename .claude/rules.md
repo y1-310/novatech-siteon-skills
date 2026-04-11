@@ -22,6 +22,7 @@
 12. 全imgタグにwidth・height属性を設定する
 13. loading="lazy" を設定する（ヒーロー画像を除く）
 14. lang="ja" をhtml要素に設定する
+14a. `<meta name="color-scheme" content="light">` を必ず設定する（Chrome強制ダークモード対策）
 15. 英語要素には lang="en" を個別指定する
 16. フォームのlabelとinputを紐付ける
 17. noscript対応を実装する（フェードイン→常時表示 / ナビ→フル表示 / マーキー→静止 / タブ→全展開）
