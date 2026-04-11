@@ -1,0 +1,46 @@
+#!/usr/bin/env bash
+# NovaTech / SITEON — pre-commit フック
+# コミット前に qa-check.sh を自動実行し、❌があればコミットをブロックする
+#
+# インストール方法:
+#   bash /Users/satouyuuichi/Developer/novatech-siteon-skills/tools/install-hooks.sh
+
+set -euo pipefail
+
+QA_SCRIPT="/Users/satouyuuichi/Developer/novatech-siteon-skills/tools/qa-check.sh"
+REPO_ROOT="$(git rev-parse --show-toplevel)"
+
+# ステージされた HTML ファイルのみチェック
+STAGED_HTML=$(git diff --cached --name-only --diff-filter=ACM | grep '\.html$' || true)
+
+if [ -z "${STAGED_HTML}" ]; then
+  # HTML の変更がない場合はスキップ
+  exit 0
+fi
+
+echo ""
+echo "🔍 pre-commit: QA チェックを実行します..."
+echo ""
+
+FAILED=0
+for file in ${STAGED_HTML}; do
+  full_path="${REPO_ROOT}/${file}"
+  if [ -f "${full_path}" ]; then
+    if ! bash "${QA_SCRIPT}" "${full_path}"; then
+      FAILED=1
+    fi
+  fi
+done
+
+if [ "${FAILED}" -eq 1 ]; then
+  echo ""
+  echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+  echo "❌ QA チェック未通過のためコミットをブロックしました。"
+  echo "   上記の問題を修正してから再度 git commit してください。"
+  echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+  exit 1
+fi
+
+echo ""
+echo "✅ QA チェック通過。コミットを続行します。"
+exit 0
