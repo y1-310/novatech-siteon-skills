@@ -9,7 +9,9 @@
 set -euo pipefail
 
 TOOLS_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+SKILLS_DIR="$(dirname "${TOOLS_DIR}")"
 HOOK_SRC="${TOOLS_DIR}/pre-commit"
+CURSORRULES_SRC="${SKILLS_DIR}/.cursorrules"
 DEV_DIR="/Users/satouyuuichi/Developer"
 
 if [ ! -f "${HOOK_SRC}" ]; then
@@ -35,21 +37,25 @@ for repo_dir in "${DEV_DIR}"/novatech-siteon-*/; do
   hook_dest="${repo_dir}.git/hooks/pre-commit"
   repo_name="$(basename "${repo_dir}")"
 
-  if [ -f "${hook_dest}" ]; then
-    # 既存フックが同じ内容なら上書きしない
-    if diff -q "${HOOK_SRC}" "${hook_dest}" > /dev/null 2>&1; then
-      echo "⏭️  ${repo_name} — 既に最新のフックがインストール済み"
-      SKIPPED=$((SKIPPED + 1))
-      continue
-    fi
-    echo "🔄 ${repo_name} — 既存フックを更新します"
+  # pre-commit フックのインストール
+  if [ -f "${hook_dest}" ] && diff -q "${HOOK_SRC}" "${hook_dest}" > /dev/null 2>&1; then
+    echo "⏭️  ${repo_name} — フックは最新"
+    SKIPPED=$((SKIPPED + 1))
   else
-    echo "✅ ${repo_name} — フックをインストールします"
+    [ -f "${hook_dest}" ] && echo "🔄 ${repo_name} — フックを更新" || echo "✅ ${repo_name} — フックをインストール"
+    cp "${HOOK_SRC}" "${hook_dest}"
+    chmod +x "${hook_dest}"
+    INSTALLED=$((INSTALLED + 1))
   fi
 
-  cp "${HOOK_SRC}" "${hook_dest}"
-  chmod +x "${hook_dest}"
-  INSTALLED=$((INSTALLED + 1))
+  # .cursorrules のコピー（client リポジトリのみ・フックの状態に関わらず実行）
+  if [[ "${repo_name}" == novatech-siteon-client-* ]]; then
+    cursorrules_dest="${repo_dir}.cursorrules"
+    if [ ! -f "${cursorrules_dest}" ] || ! diff -q "${CURSORRULES_SRC}" "${cursorrules_dest}" > /dev/null 2>&1; then
+      cp "${CURSORRULES_SRC}" "${cursorrules_dest}"
+      echo "   └─ .cursorrules をコピーしました"
+    fi
+  fi
 done
 
 echo ""

@@ -1,0 +1,79 @@
+# NovaTech / SITEON — Cursor Rules
+# このファイルは novatech-siteon-client-* リポジトリのルートにコピーして使用する
+
+## 絶対ルール（違反禁止）
+
+- 単一HTMLファイル（CSS/JS inline）で構成する
+- 禁止フォント: Inter / Arial / Roboto / Helvetica
+- !important 禁止（noscript内を除く）
+- CSS/JS の外部ファイル分離禁止
+- CSS変数の値をハードコードしない
+- top / left / margin のアニメーション禁止（transform と opacity のみ）
+- ビビッドな色を使わない
+- スタッフ・代表者写真に Unsplash を使用禁止（Pollinations.ai 生成画像を使用）
+- lp-architect の Works写真に地中海/villa/mediterranean スタイル禁止
+- ナビゲーションリンクは全て日本語テキスト
+- `<meta name="color-scheme" content="light only">` を必ず設定する（Chrome強制ダークモード対策）
+- `:root { color-scheme: only light; }` を必ず設定する
+
+## HTML品質
+
+- lang="ja" を html 要素に設定する
+- セマンティックHTML（header/nav/main/section/footer）を使用する
+- 全 img タグに alt 属性（日本語）・width・height を設定する
+- ヒーロー画像以外は loading="lazy" を設定する
+- ヒーロー画像は loading="eager" を設定する
+- スキップナビゲーションを設置する（`<a class="skip-link" href="#main">`)
+- noscript 対応を実装する
+
+## CSS品質
+
+- CSS変数: --bg / --bg-alt / --bg-dark / --text / --text-mid / --text-light / --accent / --line / --r を統一使用
+- border-radius は var(--r) で統一する
+- `.section-heading` の align-items は必ず **start** を使用（end は禁止）
+- portrait / profile 画像には必ず `max-height: 420px` を設定する
+- 2カラムグリッド（company-grid / contact-grid 等）は `align-items: stretch` を使用する
+- 日本語フォントは最大3ウェイト（300/400/500）のみ読み込む
+- Google Fonts に preconnect を設定する
+- font-display: swap を必ず設定する
+- prefers-reduced-motion に対応する
+- word-break: keep-all を見出し・コピーに設定する
+
+## SEO
+
+- JSON-LD 構造化データを設定する（業態別 @type）
+- OGP 4種（og:title / og:description / og:image / og:url）+ twitter:card を設定する
+- meta description を設定する
+- viewport を設定する
+
+## NovaTech/SITEON 共通
+
+- 予約ボタンを5箇所に配置する（ヘッダーナビ / ヒーロー / メニュー下 / フッターCTA / モバイルスティッキー）
+- モバイルスティッキーCTA + padding-bottom を設定する
+- マーキーテキストは全て日本語にする（英語禁止）
+- 料金は税込表記で統一する
+- tel: リンクを設定する
+- セクションナンバリング: 01, 02, 03...
+- デモ注記「※ SITEONの制作イメージです。実在する店舗・企業ではありません。」をfooterに追記する
+
+## デモサイト
+
+- 架空データ（店名・住所・電話番号・スタッフ名）を全セクションで一致させる
+
+## 生成後に必ず実行（QA）
+
+```bash
+bash /Users/satouyuuichi/Developer/novatech-siteon-skills/tools/qa-check.sh ./index.html
+```
+
+4チェック全て ✅ になるまでコミット禁止。
+
+## チェックリスト（生成完了前に確認）
+
+- [ ] 全 img に width / height 属性があるか？
+- [ ] .section-heading に align-items: end がないか？
+- [ ] portrait-stack img に max-height: 420px があるか？
+- [ ] ナビリンクが全て日本語か？
+- [ ] マーキーテキストが全て日本語か？
+- [ ] スタッフ写真が Pollinations.ai 生成画像か？
+- [ ] color-scheme: only light が設定されているか？
