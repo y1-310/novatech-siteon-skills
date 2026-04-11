@@ -46,13 +46,17 @@ def check_file(path):
                 is_person = True
                 break
 
-        # 人物系クラス・ID を含む文脈か確認（imgの前後100文字）
+        # 人物系CSSクラス・IDを含む文脈か確認（imgの前後200文字）
+        # ※ 本文テキスト（「スタッフ動線」等）による誤検知を防ぐため
+        #   CSSクラス名・ID属性のみを対象とする
         idx = content.find(tag)
         context = content[max(0, idx-200):idx+len(tag)+100]
-        context_keywords = ['staff-card', 'portrait', 'profile-card', 'about-portrait',
-                            'staff-list', 'member', 'スタッフ', '代表']
-        for kw in context_keywords:
-            if kw in context:
+        css_context_patterns = [
+            r'class="[^"]*(?:staff-card|portrait|profile-card|about-portrait|staff-list|staff-member|profile-img|member-card)[^"]*"',
+            r'id="[^"]*(?:staff|profile|about-staff)[^"]*"',
+        ]
+        for pattern in css_context_patterns:
+            if re.search(pattern, context):
                 is_person = True
                 break
 
