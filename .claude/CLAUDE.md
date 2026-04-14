@@ -1,5 +1,20 @@
 # NovaTech / SITEON - Claude Code メインガイド
 
+## cc-company 組織構成
+
+Yuichiから業務指示を受けたら、`.claude/agent-operations.md` の振り分けフローに従って最適な部署に振り分ける。判断に迷った場合はYuichiに確認する。
+
+| 部署 | モデル | 担当 |
+|------|--------|------|
+| CEO | Claude Code / Opus | 意思決定・計画・監督・品質チェック |
+| 営業・リサーチ部 | Kimi K2.5 | 市場調査・DM生成・競合分析 |
+| 制作・品質部 | Codex | コード生成・大量テキスト出力 |
+| マーケ・運営部 | 将来導入 | SNS運用・月次保守（顧客5件超で導入） |
+
+詳細な振り分けフローと部署間連携ルール → `.claude/agent-operations.md`
+
+---
+
 ## プロジェクト概要
 
 NovaTech（受託制作）と SITEON（サブスク型HP制作）の統合事業環境。
@@ -125,6 +140,26 @@ Round 0-5 のヒアリング実施
 | SNS投稿ファイル | YYYY-MM-DD-{プラットフォーム}.md | 2026-04-15-instagram.md |
 | ブランチ名 | main のみ | main |
 | コミットメッセージ | v{番号} {要約} | v1.2 メニュー価格更新 |
+
+## 外部AI連携ツール
+
+### Kimi K2.5 CLI (`tools/kimi.js`)
+
+```bash
+# 基本（Thinkingモード）
+node tools/kimi.js "質問内容"
+
+# 高速モード（Instantモード）
+node tools/kimi.js --instant "質問内容"
+
+# ファイル添付
+node tools/kimi.js --file data.json "このデータを分析して"
+```
+
+- **要件**: `MOONSHOT_API_KEY` 環境変数が必要
+- **モデル**: `kimi-k2-5`（Moonshot AI）
+- **システムプロンプト**: `.claude/shared-context.md` を自動注入
+- **OpenAI互換**: `https://api.moonshot.ai/v1` エンドポイント
 
 ## 絶対ルール
 
