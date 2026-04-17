@@ -181,7 +181,43 @@ node tools/kimi.js --file data.json "このデータを分析して"
 - /estimate → SITEONプラン料金表と連携
 
 ### 新規作成
-/salon-interview / /lp-salon / /lp-barber / /lp-nail-esthe / /lp-salon-group
+/salon-interview / /lp-salon / /lp-barber / /lp-nail-esthe / /lp-salon-group / /sns-generate
+
+## SNS画像生成（sns-template-v7）
+
+### /sns-generate コマンド
+
+SNS投稿画像を生成する。`skills/sns-template-v7/` スキルを使用。
+
+```bash
+# ローカル単一生成
+cd /Users/satouyuuichi/Developer/novatech-siteon-skills/skills/sns-template-v7
+node scripts/render.js data/<file>.json
+
+# バッチ生成
+node scripts/render.js data/*.json
+
+# 検証のみ
+node scripts/validate.js data/<file>.json
+
+# WebP変換
+node scripts/generate-webp.js output/
+```
+
+### GitHub Actions（自動化）
+
+| ワークフロー | リポジトリ | トリガー |
+|------------|-----------|---------|
+| sns-generate.yml | novatech-siteon-business | sns/drafts/ へのpush |
+| weekly-auto-draft.yml | novatech-siteon-business | 毎週月曜9:00 JST |
+| update-demo-image.yml | 各client-* | mainブランチへのpush |
+
+### Notion DB（フェーズ6完了）
+
+| DB名 | URL | Secret名 |
+|-----|-----|---------|
+| 📈 SNS PDCA計測 | https://www.notion.so/295642c7ec0445c9b7e73e9224fd32f5 | NOTION_DB_PDCA |
+| 📅 SNS投稿ネタ帳 | https://www.notion.so/23ce78f2701448eea5d6faade3f4d585 | NOTION_DB_IDEAS |
 
 ### 保険として残す
 /wp-theme — WordPress案件が来た場合の特別対応用
