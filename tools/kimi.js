@@ -75,7 +75,7 @@ async function main() {
   }
 
   // モデル選択
-  const model = instant ? 'kimi-k2-5' : 'kimi-k2-5';
+  const model = instant ? 'kimi-k2.5' : 'kimi-k2.5';
   const mode = instant ? '⚡ Instant' : '🧠 Thinking';
   console.error(`${mode} モードで実行中...`);
 
