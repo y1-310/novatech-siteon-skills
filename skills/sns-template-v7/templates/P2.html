@@ -17,51 +17,87 @@
   justify-content: center;
 }
 
+/* 背景タイポ（T1-T3: ISSUE / T4-T10: 業種英字） */
+.bg-typo {
+  position: absolute;
+  font-family: var(--font-serif-en);
+  color: var(--accent);
+  opacity: 0.12;
+  font-size: 280px;
+  font-weight: 400;
+  line-height: 0.8;
+  letter-spacing: -0.02em;
+  bottom: 240px;
+  left: 60px;
+  pointer-events: none;
+}
+
 .question {
   font-family: var(--font-serif-jp);
-  font-size: 54px;
+  font-size: 72px;
   font-weight: 700;
   color: var(--text);
   line-height: 1.4;
-  margin-bottom: 72px;
+  margin-bottom: 56px;
   word-break: keep-all;
-}
-
-.pain-list {
-  list-style: none;
-  display: flex;
-  flex-direction: column;
-  gap: 32px;
-}
-
-.pain-item {
-  display: flex;
-  align-items: center;
-  gap: 28px;
-}
-
-.pain-dot {
-  width: 10px;
-  height: 10px;
-  border-radius: 50%;
-  background: var(--accent);
-  flex-shrink: 0;
-}
-
-.pain-text {
-  font-family: var(--font-sans-jp);
-  font-size: 44px;
-  font-weight: 400;
-  color: var(--text);
-  line-height: 1.5;
-  word-break: keep-all;
+  position: relative;
+  z-index: 1;
 }
 
 .divider {
   width: 48px;
   height: 2px;
   background: var(--accent);
-  margin-bottom: 56px;
+  margin-bottom: 48px;
+  position: relative;
+  z-index: 1;
+}
+
+.pain-list {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 28px;
+  position: relative;
+  z-index: 1;
+}
+
+.pain-item {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+}
+
+.pain-icon {
+  color: var(--accent);
+  font-family: var(--font-serif-en);
+  font-size: 28px;
+  font-weight: 400;
+  flex-shrink: 0;
+  width: 28px;
+  text-align: center;
+  line-height: 1;
+}
+
+.pain-text {
+  font-family: var(--font-sans-jp);
+  font-size: 40px;
+  font-weight: 500;
+  color: var(--text);
+  line-height: 1.5;
+  word-break: keep-all;
+}
+
+/* スワイプ誘導 */
+.swipe-indicator {
+  position: absolute;
+  right: 44px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--accent);
+  font-family: var(--font-serif-en);
+  font-size: 40px;
+  font-weight: 400;
 }
 
 .page-number {
@@ -89,11 +125,13 @@
 </head>
 <body data-template="{{template_id}}">
 <div class="canvas" data-variant="{{variant}}">
+  {{bg_typo_block}}
   <h2 class="question">{{question}}</h2>
   <div class="divider"></div>
   <ul class="pain-list">
     {{pain_items}}
   </ul>
+  <div class="swipe-indicator">→</div>
   <div class="page-number">2/4</div>
   <div class="mini-logo">NovaTech.</div>
 </div>

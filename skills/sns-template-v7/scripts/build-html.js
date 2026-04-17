@@ -29,15 +29,16 @@ export function buildHTML(pageId, post) {
   html = html.replaceAll('{{variant}}', variant);
 
   // ページ別の固有置換
+  const bgTypo = post.pages.P1?.bg_typo || '';
   switch (pageId) {
     case 'P1':
       html = buildP1(html, pageData, variant);
       break;
     case 'P2':
-      html = buildP2(html, pageData);
+      html = buildP2(html, pageData, variant, bgTypo);
       break;
     case 'P3':
-      html = buildP3(html, pageData, variant);
+      html = buildP3(html, pageData, variant, bgTypo);
       break;
     case 'P4':
       html = buildP4(html, pageData, variant);
@@ -74,12 +75,21 @@ function buildP1(html, p1, variant) {
   return html;
 }
 
-function buildP2(html, p2) {
+function buildP2(html, p2, variant, bgTypo) {
+  // bg_typo_block
+  let bgTypoBlock = '';
+  if (variant === 'brand') {
+    bgTypoBlock = '<div class="bg-typo">ISSUE</div>';
+  } else if (variant === 'case' && bgTypo) {
+    bgTypoBlock = `<div class="bg-typo">${esc(bgTypo)}</div>`;
+  }
+  html = html.replaceAll('{{bg_typo_block}}', bgTypoBlock);
+
   html = html.replaceAll('{{question}}', esc(p2.question));
 
   const painItems = p2.pain_points.map(point => `
     <li class="pain-item">
-      <div class="pain-dot"></div>
+      <span class="pain-icon">—</span>
       <span class="pain-text">${esc(point)}</span>
     </li>`).join('');
 
@@ -87,7 +97,16 @@ function buildP2(html, p2) {
   return html;
 }
 
-function buildP3(html, p3, variant) {
+function buildP3(html, p3, variant, bgTypo) {
+  // bg_typo_block
+  let bgTypoBlock = '';
+  if (variant === 'brand') {
+    bgTypoBlock = '<div class="bg-typo">POINT</div>';
+  } else if (variant === 'case' && bgTypo) {
+    bgTypoBlock = `<div class="bg-typo">${esc(bgTypo)}</div>`;
+  }
+  html = html.replaceAll('{{bg_typo_block}}', bgTypoBlock);
+
   html = html.replaceAll('{{heading}}', esc(p3.heading));
 
   let content = '';
@@ -121,8 +140,11 @@ function buildP3(html, p3, variant) {
     // T11: features grid
     const featureItems = (p3.features || []).map(f => `
       <div class="feature-item">
-        <div class="feature-name">${esc(f.name)}</div>
-        <div class="feature-desc">${esc(f.description)}</div>
+        <span class="feature-check">✓</span>
+        <div class="feature-body">
+          <div class="feature-name">${esc(f.name)}</div>
+          <div class="feature-desc">${esc(f.description)}</div>
+        </div>
       </div>`).join('');
     content = `<div class="features-grid">${featureItems}</div>`;
   }

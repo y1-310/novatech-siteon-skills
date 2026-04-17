@@ -19,7 +19,7 @@
 
 .summary-title {
   font-family: var(--font-serif-jp);
-  font-size: 64px;
+  font-size: 72px;
   font-weight: 700;
   color: var(--text);
   line-height: 1.3;
@@ -29,10 +29,10 @@
 
 .summary-sub {
   font-family: var(--font-serif-en);
-  font-size: 36px;
+  font-size: 40px;
   font-weight: 400;
   color: var(--accent);
-  margin-bottom: 60px;
+  margin-bottom: 52px;
   letter-spacing: 0.06em;
 }
 
@@ -40,7 +40,7 @@
   width: 48px;
   height: 2px;
   background: var(--accent);
-  margin-bottom: 60px;
+  margin-bottom: 52px;
 }
 
 /* 通常CTA（T1-T10） */
@@ -53,10 +53,11 @@
   font-family: var(--font-sans-jp);
   font-size: 40px;
   font-weight: 700;
-  padding: 32px 56px;
-  border-radius: 60px;
-  margin-bottom: 56px;
+  padding: 36px 64px;
+  border-radius: 0;
+  margin-bottom: 52px;
   align-self: flex-start;
+  letter-spacing: 0.02em;
 }
 .cta-icon {
   font-size: 36px;
@@ -70,7 +71,7 @@
   color: var(--accent);
   line-height: 1;
   letter-spacing: -0.02em;
-  margin-bottom: 24px;
+  margin-bottom: 20px;
 }
 .service-sub-text {
   font-family: var(--font-sans-jp);
@@ -78,25 +79,40 @@
   font-weight: 400;
   color: var(--text);
   opacity: 0.7;
-  margin-bottom: 48px;
+  margin-bottom: 44px;
 }
 
+/* 次回予告 + @ハンドル */
+.footer-info {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
 .next-preview {
   display: flex;
   align-items: center;
   gap: 16px;
   font-family: var(--font-sans-jp);
-  font-size: 30px;
+  font-size: 28px;
   font-weight: 400;
   color: var(--text);
   opacity: 0.6;
 }
 .next-label {
   font-family: var(--font-serif-en);
-  font-size: 22px;
+  font-size: 20px;
   color: var(--accent);
   font-weight: 400;
-  letter-spacing: 0.04em;
+  letter-spacing: 0.06em;
+  opacity: 1;
+}
+.handle {
+  font-family: var(--font-serif-en);
+  font-size: 28px;
+  font-weight: 400;
+  color: var(--text);
+  opacity: 0.5;
+  letter-spacing: 0.02em;
 }
 
 .page-number {
@@ -109,16 +125,17 @@
   font-weight: 400;
   opacity: 0.6;
 }
-.mini-logo {
+/* P4はフルロゴ（48px）を右下に */
+.full-logo {
   position: absolute;
-  left: 80px;
+  right: 80px;
   bottom: 80px;
   color: var(--text);
   font-family: var(--font-serif-en);
-  font-size: 18px;
+  font-size: 40px;
   font-weight: 400;
-  letter-spacing: 0.06em;
-  opacity: 0.6;
+  letter-spacing: 0.04em;
+  opacity: 0.8;
 }
 </style>
 </head>
@@ -128,12 +145,15 @@
   {{summary_sub_block}}
   <div class="divider"></div>
   {{cta_block}}
-  <div class="next-preview">
-    <span class="next-label">NEXT</span>
-    <span>{{next_preview}}</span>
+  <div class="footer-info">
+    <div class="next-preview">
+      <span class="next-label">NEXT</span>
+      <span>{{next_preview}}</span>
+    </div>
+    <div class="handle">@novatech_web</div>
   </div>
   <div class="page-number">4/4</div>
-  <div class="mini-logo">NovaTech.</div>
+  <div class="full-logo">NovaTech.</div>
 </div>
 </body>
 </html>
