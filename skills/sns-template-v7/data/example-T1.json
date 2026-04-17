@@ -1,0 +1,41 @@
+{
+  "meta": {
+    "template_id": "T1",
+    "post_axis": "attraction_hint",
+    "industry": "general",
+    "cta_type": "B",
+    "hashtags": ["#サロン集客", "#美容室経営", "#集客のヒント", "#HP制作", "#SateOn"],
+    "next_preview": "次回：Googleマップ活用術",
+    "publish_date": "2026-04-21",
+    "status": "draft",
+    "caption": "美容室は毎年1万軒が新規開業しています。\n\n「技術があれば客は来る」——その考えだけでは難しくなっています。\n\n生き残るサロンが共通してやっていること、画像にまとめました。\n\n詳しくはプロフィールのリンクから ▷"
+  },
+  "pages": {
+    "P1": {
+      "hook_main": "1万",
+      "hook_title": "毎年新規開業する美容室数"
+    },
+    "P2": {
+      "question": "こんな経験ありませんか？",
+      "pain_points": [
+        "新規客がなかなか来ない",
+        "HPBに頼りきっている",
+        "Web検索で出てこない"
+      ]
+    },
+    "P3": {
+      "heading": "生き残るサロンの共通点",
+      "body_paragraphs": [
+        "HPBだけでなく自社HPとGoogleマップも活用している。",
+        "地域名検索で上位に出る仕組みがある。",
+        "LINEでリピーター施策を続けている。"
+      ]
+    },
+    "P4": {
+      "summary_title": "まずはWeb上の整備から",
+      "cta_text": "保存してあとで読む",
+      "cta_icon": "bookmark",
+      "next_preview": "次回：Googleマップ活用術"
+    }
+  }
+}

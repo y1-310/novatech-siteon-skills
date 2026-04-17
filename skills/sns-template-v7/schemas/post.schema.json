@@ -1,0 +1,101 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "required": ["meta", "pages"],
+  "properties": {
+    "meta": {
+      "type": "object",
+      "required": ["template_id", "post_axis", "industry", "cta_type", "hashtags", "next_preview", "publish_date", "status", "caption"],
+      "properties": {
+        "template_id": { "type": "string", "pattern": "^T([1-9]|1[01])$" },
+        "post_axis": { "enum": ["attraction_hint", "case_study", "service_intro"] },
+        "industry": { "enum": ["salon", "restaurant", "architect", "corporate", "barber", "nail-esthe", "salon-group", "general", "service"] },
+        "cta_type": { "enum": ["A", "B", "C"] },
+        "hashtags": { "type": "array", "maxItems": 10, "items": { "type": "string" } },
+        "next_preview": { "type": "string", "maxLength": 20 },
+        "publish_date": { "type": "string", "format": "date" },
+        "status": { "enum": ["draft", "review", "approved", "posted"] },
+        "caption": { "type": "string", "maxLength": 2200 }
+      }
+    },
+    "pages": {
+      "type": "object",
+      "required": ["P1", "P2", "P3", "P4"],
+      "properties": {
+        "P1": { "$ref": "#/definitions/P1" },
+        "P2": { "$ref": "#/definitions/P2" },
+        "P3": { "$ref": "#/definitions/P3" },
+        "P4": { "$ref": "#/definitions/P4" }
+      }
+    }
+  },
+  "definitions": {
+    "P1": {
+      "type": "object",
+      "required": ["hook_title"],
+      "properties": {
+        "hook_main": { "type": "string", "maxLength": 5 },
+        "hook_title": { "type": "string", "maxLength": 15 },
+        "bg_typo": { "type": "string" },
+        "hero_image": { "type": "string" }
+      }
+    },
+    "P2": {
+      "type": "object",
+      "required": ["question", "pain_points"],
+      "properties": {
+        "question": { "type": "string", "maxLength": 20 },
+        "pain_points": {
+          "type": "array",
+          "minItems": 3,
+          "maxItems": 3,
+          "items": { "type": "string", "maxLength": 15 }
+        }
+      }
+    },
+    "P3": {
+      "type": "object",
+      "required": ["heading"],
+      "properties": {
+        "heading": { "type": "string", "maxLength": 20 },
+        "body_paragraphs": { "type": "array", "items": { "type": "string" } },
+        "lighthouse_scores": {
+          "type": "object",
+          "properties": {
+            "p": { "type": "number", "minimum": 0, "maximum": 100 },
+            "a": { "type": "number", "minimum": 0, "maximum": 100 },
+            "bp": { "type": "number", "minimum": 0, "maximum": 100 },
+            "s": { "type": "number", "minimum": 0, "maximum": 100 }
+          }
+        },
+        "demo_url_display": { "type": "string" },
+        "supplement": { "type": "string", "maxLength": 30 },
+        "features": {
+          "type": "array",
+          "maxItems": 8,
+          "items": {
+            "type": "object",
+            "required": ["name", "description"],
+            "properties": {
+              "name": { "type": "string" },
+              "description": { "type": "string" }
+            }
+          }
+        }
+      }
+    },
+    "P4": {
+      "type": "object",
+      "required": ["summary_title", "cta_text", "cta_icon", "next_preview"],
+      "properties": {
+        "summary_title": { "type": "string", "maxLength": 25 },
+        "summary_sub": { "type": "string", "maxLength": 20 },
+        "cta_text": { "type": "string", "maxLength": 10 },
+        "cta_icon": { "enum": ["arrow", "bookmark", "message"] },
+        "next_preview": { "type": "string", "maxLength": 20 },
+        "url_display": { "type": "string" },
+        "sub_text": { "type": "string" }
+      }
+    }
+  }
+}

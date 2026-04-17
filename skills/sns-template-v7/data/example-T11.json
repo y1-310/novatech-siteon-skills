@@ -1,0 +1,47 @@
+{
+  "meta": {
+    "template_id": "T11",
+    "post_axis": "service_intro",
+    "industry": "service",
+    "cta_type": "A",
+    "hashtags": ["#ホームページ制作", "#サブスクHP", "#SateOn", "#集客HP", "#月額制"],
+    "next_preview": "次回：制作事例を紹介",
+    "publish_date": "2026-04-26",
+    "status": "draft",
+    "caption": "月額9,800円でここまで含まれます。\n\n初期費用0円。いつでも解約可能。\nLighthouse90点以上を保証しています。\n\nまずはお気軽にDMください ▷\nsiteon.jp"
+  },
+  "pages": {
+    "P1": {
+      "hook_title": "月9,800円に含まれるもの"
+    },
+    "P2": {
+      "question": "こんなお悩みありませんか？",
+      "pain_points": [
+        "HPに高額を払えない",
+        "更新のたびに費用がかかる",
+        "品質とコストが両立しない"
+      ]
+    },
+    "P3": {
+      "heading": "含まれる機能",
+      "features": [
+        { "name": "Lighthouse 90点以上保証", "description": "全指標90点以上を保証" },
+        { "name": "スマホ完全対応", "description": "全デバイスで美しく表示" },
+        { "name": "更新無制限", "description": "いつでも何度でも対応" },
+        { "name": "Google Maps連携", "description": "地域検索で見つかる仕組み" },
+        { "name": "予約導線設計", "description": "HPB/LINE/電話に対応" },
+        { "name": "SEO対策", "description": "検索上位を狙う基本設定" },
+        { "name": "初期費用0円", "description": "月額のみで始められる" },
+        { "name": "即日対応", "description": "修正は1〜2営業日以内" }
+      ]
+    },
+    "P4": {
+      "summary_title": "まずは無料相談から",
+      "cta_text": "DMで相談する",
+      "cta_icon": "message",
+      "next_preview": "次回：制作事例を紹介",
+      "url_display": "siteon.jp",
+      "sub_text": "プロフィールのリンクから"
+    }
+  }
+}

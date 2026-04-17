@@ -1,0 +1,16 @@
+{
+  "name": "sns-template-v7",
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "render": "node scripts/render.js",
+    "validate": "node scripts/validate.js",
+    "webp": "node scripts/generate-webp.js output/"
+  },
+  "dependencies": {
+    "puppeteer": "^23.0.0",
+    "sharp": "^0.33.0",
+    "ajv": "^8.17.0",
+    "ajv-formats": "^3.0.0"
+  }
+}

@@ -1,0 +1,41 @@
+{
+  "meta": {
+    "template_id": "T4",
+    "post_axis": "case_study",
+    "industry": "salon",
+    "cta_type": "C",
+    "hashtags": ["#美容室開業", "#HP制作", "#サロン経営", "#個人サロン", "#集客", "#SateOn"],
+    "next_preview": "リピート率3倍の予約動線",
+    "publish_date": "2026-04-22",
+    "status": "draft",
+    "caption": "「月額9,800円でこのクオリティ」\n\n美容室Selquneのホームページ制作事例です。\n\nLighthouse全項目100点を達成。スマホ対応・予約導線・Google Maps連携まで含まれています。\n\n詳しくはプロフィールのリンクから ▷"
+  },
+  "pages": {
+    "P1": {
+      "hook_title": "月9,800円で作れる",
+      "bg_typo": "HAIR",
+      "hero_image": "assets/demo-salon.webp"
+    },
+    "P2": {
+      "question": "こんな経験ありませんか？",
+      "pain_points": [
+        "HPが古くて恥ずかしい",
+        "予約が電話のみで機会損失",
+        "SNSとHPが連動してない"
+      ]
+    },
+    "P3": {
+      "heading": "Lighthouse 100点",
+      "lighthouse_scores": { "p": 100, "a": 96, "bp": 100, "s": 100 },
+      "demo_url_display": "selqune.siteon.jp",
+      "supplement": "表示0.8秒・モバイル完全対応"
+    },
+    "P4": {
+      "summary_title": "月9,800円で作れる",
+      "summary_sub": "For HAIR",
+      "cta_text": "DMで相談する",
+      "cta_icon": "message",
+      "next_preview": "次回：リピート率3倍の予約動線"
+    }
+  }
+}

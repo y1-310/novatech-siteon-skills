@@ -1,0 +1,103 @@
+# このワークフローは各 novatech-siteon-client-* リポジトリにコピーして使用する
+# コピー先: .github/workflows/update-demo-image.yml
+
+name: デモ画像自動更新
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '**.html'
+      - 'assets/**'
+      - 'css/**'
+
+jobs:
+  update-demo-image:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: skillsリポチェックアウト
+        uses: actions/checkout@v4
+        with:
+          repository: y1-310/novatech-siteon-skills
+          token: ${{ secrets.SKILLS_REPO_PAT }}
+          path: skills-repo
+
+      - name: Node.jsセットアップ
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: 依存インストール
+        run: npm install puppeteer sharp
+
+      - name: Puppeteer依存インストール
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y chromium-browser
+
+      - name: 業種判定（リポ名から）
+        id: industry
+        run: |
+          REPO_NAME="${{ github.event.repository.name }}"
+          case "$REPO_NAME" in
+            *selqune*|*bloom*) echo "industry=salon" >> $GITHUB_OUTPUT ;;
+            *fraviel*) echo "industry=restaurant" >> $GITHUB_OUTPUT ;;
+            *atelique*|*architect*) echo "industry=architect" >> $GITHUB_OUTPUT ;;
+            *seion*|*corporate*|*ledger*|*novatech) echo "industry=corporate" >> $GITHUB_OUTPUT ;;
+            *barber*) echo "industry=barber" >> $GITHUB_OUTPUT ;;
+            *nail*|*esthe*) echo "industry=nail-esthe" >> $GITHUB_OUTPUT ;;
+            *group*) echo "industry=salon-group" >> $GITHUB_OUTPUT ;;
+            *) echo "industry=general" >> $GITHUB_OUTPUT ;;
+          esac
+
+      - name: GitHub Pages URL撮影
+        run: |
+          node --input-type=module << 'EOF'
+          import puppeteer from 'puppeteer';
+          import sharp from 'sharp';
+
+          const industry = '${{ steps.industry.outputs.industry }}';
+          const repoName = '${{ github.event.repository.name }}';
+
+          // GitHub Pages URL（サブドメインまたはパス形式）
+          const url = `https://y1-310.github.io/${repoName}/`;
+
+          const browser = await puppeteer.launch({
+            args: ['--no-sandbox', '--disable-setuid-sandbox']
+          });
+          const page = await browser.newPage();
+          await page.setViewport({ width: 1440, height: 900, deviceScaleFactor: 2 });
+
+          await page.goto(url, { waitUntil: 'networkidle0' });
+          await new Promise(r => setTimeout(r, 1000));
+          await page.screenshot({ path: 'demo-raw.png' });
+          await browser.close();
+
+          await sharp('demo-raw.png')
+            .resize(1440, 900, { fit: 'cover', position: 'top' })
+            .webp({ quality: 90 })
+            .toFile(`demo-${industry}.webp`);
+
+          console.log(`✅ demo-${industry}.webp 生成完了`);
+          EOF
+
+      - name: skillsリポへcommit
+        run: |
+          cp demo-${{ steps.industry.outputs.industry }}.webp skills-repo/skills/sns-template-v7/assets/
+          cd skills-repo
+          git config user.name "github-actions"
+          git config user.email "actions@github.com"
+          git add skills/sns-template-v7/assets/
+          git diff --staged --quiet || git commit -m "auto: ${{ steps.industry.outputs.industry }} demo画像更新 (${{ github.event.repository.name }})"
+          git push
+
+      - name: Slack通知
+        if: success()
+        run: |
+          curl -X POST \
+            -H "Authorization: Bearer ${{ secrets.SLACK_BOT_TOKEN }}" \
+            -H 'Content-type: application/json' \
+            --data "{\"channel\":\"C0ATGHMPVMK\",\"text\":\"🔄 デモ画像更新完了\\n業種：${{ steps.industry.outputs.industry }}\\nトリガー：${{ github.event.repository.name }}\"}" \
+            https://slack.com/api/chat.postMessage

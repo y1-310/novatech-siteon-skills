@@ -1,0 +1,49 @@
+:root {
+  --color-brand-sage: #7C9A8E;
+  --color-brand-charcoal: #1A2332;
+  --color-brand-greige: #F9F8F5;
+  --color-brand-dark: #2A2826;
+  --color-brand-gold: #C4A265;
+  --color-text-on-dark: #FFFFFF;
+  --color-text-on-light: #2A2826;
+  --safe-area: 80px;
+  --font-serif-jp: 'Shippori Mincho', serif;
+  --font-serif-en: 'Cormorant Garamond', serif;
+  --font-sans-jp: 'Noto Sans JP', sans-serif;
+}
+
+[data-template="T1"] {
+  --bg: var(--color-brand-sage);
+  --text: var(--color-text-on-dark);
+  --accent: var(--color-brand-gold);
+}
+
+[data-template="T2"] {
+  --bg: var(--color-brand-charcoal);
+  --text: var(--color-text-on-dark);
+  --accent: var(--color-brand-gold);
+}
+
+[data-template="T3"] {
+  --bg: var(--color-brand-greige);
+  --text: var(--color-text-on-light);
+  --accent: var(--color-brand-gold);
+}
+
+[data-template="T4"],
+[data-template="T5"],
+[data-template="T6"],
+[data-template="T7"],
+[data-template="T8"],
+[data-template="T9"],
+[data-template="T10"] {
+  --bg: var(--color-brand-dark);
+  --text: var(--color-text-on-dark);
+  --accent: var(--color-brand-gold);
+}
+
+[data-template="T11"] {
+  --bg: var(--color-brand-greige);
+  --text: var(--color-text-on-light);
+  --accent: var(--color-brand-gold);
+}
