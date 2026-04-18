@@ -70,7 +70,7 @@
 ### SITEON案件追加
 - [ ] GitHub Pages デプロイ済み
 - [ ] 独自ドメイン設定・DNS反映済み
-- [ ] SSL証明書有効
+- [ ] SSL証明書有効（https_enforced=true 必須・rules.md カテゴリ16参照）
 - [ ] フォーム送信テスト完了
 - [ ] 予約システム連携確認
 - [ ] GBPにサイトURL設定
