@@ -3,6 +3,8 @@
 > **画像選定ルール**: このファイル内の `{画像}` プレースホルダーは、デモサイト生成時に
 > `_common/image-guide.md` セクション8.5のフローに従って Unsplash/Pexels の実画像URLに差し替えること。
 > placehold.co はローカル開発時のみ使用可。デモ提示用サイトでは実画像必須。
+>
+> **モバイルナビ実装**: ハンバーガーメニューの HTML/CSS/JS は `_common/mobile-nav.md` を参照すること。
 
 
 ## グループトップ（index.html）
