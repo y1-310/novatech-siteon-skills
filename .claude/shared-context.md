@@ -200,6 +200,20 @@ corporate=空気20%/証拠20%/技術10%/人物50%
 
 ---
 
+## インフラ品質ルール（全モデル共通）
+
+GitHub Pages の設定を変更した場合、`https_enforced=true` の確認を必ず実行する。
+Web UI では見えにくい設定のため、API 経由での確認が必須。
+
+```bash
+gh api repos/{owner}/{repo}/pages --jq '.cname, .https_enforced'
+# 期待値: "siteon.jp" / true
+```
+
+詳細チェックリスト（5 項目）は `rules.md` カテゴリ 15 参照。
+
+---
+
 ## 7. 変更時の同期フロー
 
 ```
@@ -222,3 +236,4 @@ Yuichi「ルール変えて」→ Claude Code が一括更新：
 | 2026-04-08 | デモサイト生成ルールを追加（架空データ自動生成 / placehold.co または Unsplash・Pexels / SNS デモ末尾に「※デモサイトです」明記） | Claude Code |
 | 2026-04-10 | 日本語コピー品質ルール追加（_common/japanese-copy-guide.md 全15ルール準拠） | Claude Code |
 | 2026-04-10 | 画像選定・品質ガイド追加（_common/image-guide.md v2.0 全7業態+NovaTech競合分析統合） | Claude Code |
+| 2026-04-18 | インフラ品質ルール追加（https_enforced 確認必須・siteon.jp SSL障害の再発防止） | Claude Code |
