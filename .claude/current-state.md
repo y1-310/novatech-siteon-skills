@@ -28,6 +28,8 @@
 
 ## ✅ 直近完了（過去7日）
 
+- 2026-04-20: Notion タスク棚卸し実施（1件を✅完了・1件を備考更新）
+- 2026-04-20: Safari iOS overflow-x バグ修正（デモ4件 + rules.md ルール36 + mobile-nav.md）
 - 2026-04-20: スマホ⇔Mac運用設計完了（.claude/mobile-ops.md 新規作成・Notionタスク4件追加）
 - 2026-04-19: v2-final整理プロジェクト実施（.claude/ 3ファイル追加・current-state.md新設・Notion追記）
 - 2026-04-19: v1.11 デモサイト4件モバイルナビ修正完了（mori/akari inset fix push済み）
