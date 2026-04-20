@@ -46,6 +46,7 @@
 33. **portrait / profile 画像には必ず `max-height: 420px` を設定する**。列幅が広いと縦に伸びすぎてバランスが崩れる。
 34. **2カラムグリッド（company-grid / contact-grid 等）は `align-items: stretch` を使用する**。`start` では左右の下端が揃わない。
 35. **全 `<img>` タグに `width` と `height` 属性を必ず設定する**（hero含む）。未設定は CLS（累積レイアウトシフト）の原因になり Lighthouse スコアを低下させる。
+36. **`html` と `body` の両方に `overflow-x: hidden` を必ず設定する**。`body` だけでは Safari iOS でマーキー等の `width: max-content` 要素がページ幅を膨張させ、コンテンツが画面左半分に寄り右半分が空白になるバグが発生する。Chrome / Puppeteer では再現しないため実機確認が必須。
 
 ## 5. アクセシビリティ（8項目）
 

@@ -214,6 +214,18 @@ background: rgba(255,255,255,0.3);
 ```
 → `@media (prefers-reduced-motion: reduce)` ブロックで `transition-duration: 0.01ms` を追加する
 
+### ❌ Safari iOS 水平はみ出し（コンテンツが左半分に寄る）
+```css
+/* NG: body だけでは Safari iOS でマーキー等が幅膨張を起こす */
+body { overflow-x: hidden; }
+```
+→ `html` と `body` の **両方** に設定する（`.claude/rules.md` カテゴリ4 ルール36）:
+```css
+html { overflow-x: hidden; }
+body { overflow-x: hidden; }
+```
+**原因**: `width: max-content` + CSS `transform` アニメーション（マーキー等）が Safari iOS のスクロール幅計算をトリガーし、`body` 単体の `overflow-x: hidden` では封じ込めできない。Chrome / Puppeteer では再現しないため実機（iPhone Safari）での確認が必須。
+
 ---
 
 ## 業態別ブレークポイント参考
