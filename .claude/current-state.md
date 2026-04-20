@@ -29,6 +29,8 @@
 
 ## ✅ 直近完了（過去7日）
 
+- 2026-04-20: Phase 1.5 完了（Notion クエリ最適化、95%削減達成）
+- 2026-04-20: cc-company サブエージェント体制 Phase 1-3 完了（4役職再設計、秘書室新設、secretary.md v1.1準拠）
 - 2026-04-20: Notion タスク棚卸し実施（1件を✅完了・1件を備考更新）
 - 2026-04-20: Safari iOS overflow-x バグ修正（デモ4件 + rules.md ルール36 + mobile-nav.md）
 - 2026-04-20: cc-company サブエージェント化 Phase 1-3 完了（agents/ 4指示書・CLAUDE.md/agent-operations/shared-context 新構造化・秘書ノートページ作成）
