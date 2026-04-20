@@ -2,16 +2,20 @@
 
 ## cc-company 組織構成
 
-Yuichiから業務指示を受けたら、`.claude/agent-operations.md` の振り分けフローに従って最適な部署に振り分ける。判断に迷った場合はYuichiに確認する。
+Yuichiから業務指示を受けたら、CEO が `.claude/agent-operations.md` の振り分けフローに従い
+Task ツールで適切な部署長サブエージェントを起動する。判断に迷った場合はYuichiに確認する。
 
-| 部署 | モデル | 担当 |
+| 役職 | モデル | 担当 |
 |------|--------|------|
-| CEO | Claude Code / Opus | 意思決定・計画・監督・品質チェック |
-| 営業・リサーチ部 | Kimi K2.5 | 市場調査・DM生成・競合分析 |
-| 制作・品質部 | Codex | コード生成・大量テキスト出力 |
-| マーケ・運営部 | 将来導入 | SNS運用・月次保守（顧客5件超で導入） |
+| CEO | Claude Code Opus 4.7（メイン） | 意思決定・計画・監督・品質チェック・振り分け |
+| 営業・リサーチ部長 | Opus 4.6 サブ → Kimi K2.5 を道具 | 市場調査・DM生成・競合分析・事業者カルテ作成 |
+| 制作・品質部長 | Opus 4.6 サブ → Codex を道具 | コード生成・大量テキスト出力・品質チェック |
+| マーケ・運営部長 | Opus 4.6 サブ → Kimi を道具（顧客5件超で稼働） | SNS運用・月次保守・GBP運用 |
+| 秘書室 | Opus 4.6 サブ → Notion/Calendar/Gmail MCP | 情報集約・日次ブリーフ・状態管理 |
 
 詳細な振り分けフローと部署間連携ルール → `.claude/agent-operations.md`
+各部署長指示書 → `.claude/agents/` ディレクトリ
+Notion クエリルール（秘書室用） → `.claude/notion-query-rules.md`
 
 ---
 
@@ -26,7 +30,7 @@ NovaTech（受託制作）と SITEON（サブスク型HP制作）の統合事業
 |-----------|------|
 | novatech-siteon-skills | スキル・ルール・共通基盤 |
 | novatech-siteon-business | 顧客管理・営業資料・レポート・SNS |
-| novatech-siteon-client-{名前} | クライアントサイト（1サロン1リポ） |
+| novatech-siteon-client-{名前} | クライアントサイト（1クライアント1リポ） |
 
 ## ルールファイル参照順
 
@@ -38,54 +42,47 @@ NovaTech（受託制作）と SITEON（サブスク型HP制作）の統合事業
 6. `.claude/client-management.md` — 顧客管理手順
 7. `.claude/lessons.md` — 修正パターン記録
 
-## Claude Code と Codex の役割分担
+## cc-company サブエージェント構造
 
 ```
-Claude Code = 経営者・管理職（判断・計画・監督）
-Codex       = 実務担当者（全ての出力作業）
+CEO (Claude Code Opus 4.7) = 振り分け・最終判断・監督
+  └─ Task ツールで部署長サブ起動 (Opus 4.6)
+     ├─ 営業・リサーチ部長 → Kimi K2.5 を道具（市場調査・DM・事業者カルテ）
+     ├─ 制作・品質部長    → Codex/Kimi を道具（コード生成・全テキスト出力）
+     ├─ マーケ・運営部長  → Kimi/Puppeteer を道具（顧客5件超で稼働）
+     └─ 秘書室           → Notion/Calendar/Gmail MCP（情報集約・日次ブリーフ）
 
-原則：Claude Codeが1行でも文章やコードを自分で書こうとしたら、
-     それはCodexに任せるべき作業。
+原則：CEO が1行でも出力しようとしたら、それは部署長に任せるべき作業。
 ```
 
-### Claude Code の担当
+### CEO の担当
 
+- タスクを受け取り、適切な部署長へ振り分ける（振り分け）
 - 何をやるか決める（計画）
-- どの方法が最適か選ぶ（判断）
-- Codexに具体的な指示を出す（指示）
-- Codexの出力をチェックする（監督）
+- 最適な方法を選ぶ（判断）
+- 部署長サブエージェントに具体的な指示を出す（指示）
+- 部署長の出力をチェックする（監督）
 - git操作・API呼び出しを実行する（実行）
 - エラーの原因を分析する（分析）
 - 顧客ステータスを管理する（管理）
 
-### Codex の担当（全ての出力作業）
+### 各部署長の担当（全ての出力作業）
 
-- HTML/CSS/JS サイト生成
-- JSON データ生成・整形
-- Markdown ドキュメント
-- メール文面・営業DM・提案書・見積書
-- SEOテキスト（title/description/JSON-LD）
-- SNS投稿文・ブログ記事
-- 口コミ返信文
-- 法的文書テンプレート
-- FAQ・コンセプト文・キャッチコピー
-- サロンカルテの整形
-- Googleフォームの質問項目テキスト
+| 部署長 | 担当作業 | 使う道具 |
+|--------|---------|---------|
+| 営業・リサーチ部長 | 事業者リスト生成・カルテ作成・DM一括生成・市場調査 | Kimi K2.5 |
+| 制作・品質部長 | HTML/CSS/JS生成・コンセプト文・見積書・SEOテキスト等全出力 | Codex / Kimi |
+| マーケ・運営部長 | SNS投稿生成・月次保守・GBP運用 | Kimi / Puppeteer |
+| 秘書室 | 日次ブリーフ・Notion更新・current-state.md保守 | Notion MCP |
 
-### Plusプランでの段階的運用
+各指示書の完全仕様 → `.claude/agents/` ディレクトリ
 
-| フェーズ | 条件 | 運用 |
-|---------|------|------|
-| 1 | 今〜成約3件 | サイト生成・大量DM→Codex、短い文書→Claude Code許容 |
-| 2 | 成約3件超 | 全出力作業をCodexに委任（月$200はSITEON3件分で回収） |
-| 3 | 成約10件超 | Pro継続 or APIキー（使用量で判断） |
+### コスト管理
 
-### Codexコスト節約策
-
-- 軽い作業はgpt-5.4-miniを使う
-- 1回で正確に出力させる（やり直しがクレジットの無駄）
-- AGENTS.mdで事前ルール設定→出力品質UP
-- 複数の小さな依頼を1回にまとめる
+- 全サブエージェント: Opus 4.6 / CEO: Opus 4.7
+- 制作部内の軽いタスクは gpt-5.4-mini を使う
+- 1回で正確に出力させる（やり直しがコストの無駄）
+- 秘書室の Notion 取得は `.claude/notion-query-rules.md` Pattern A/B/C を厳守
 
 ## スキル間の連携フロー
 
@@ -134,7 +131,7 @@ Round 0-5 のヒアリング実施
 
 | 対象 | 命名規則 | 例 |
 |------|---------|-----|
-| クライアントサイトリポ | novatech-siteon-client-{サロン名英語小文字} | novatech-siteon-client-bloom |
+| クライアントサイトリポ | novatech-siteon-client-{クライアント名英語小文字} | novatech-siteon-client-bloom |
 | 顧客JSON内のID | 3桁連番 | 001, 002, 003 |
 | レポートファイル | YYYY-MM-{種類}.md | 2026-04-monthly.md |
 | SNS投稿ファイル | YYYY-MM-DD-{プラットフォーム}.md | 2026-04-15-instagram.md |

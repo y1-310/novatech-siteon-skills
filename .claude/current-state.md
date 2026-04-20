@@ -19,17 +19,19 @@
 
 多忙期間：2026-04-15〜04-25。復帰後に営業フェーズ開始。
 
-## 🏢 cc-company 4部署体制（2026-04-14〜）
+## 🏢 cc-company サブエージェント体制（2026-04-20〜）
 
-- CEO: Claude Code（Sonnet 4.6、Max $100/月）
-- 営業・リサーチ部: Kimi K2.5 API
-- 制作・品質部: Codex（GPT-5.4, Plus $20）→ 2026-05にCursor PRO移行判断
-- マーケ・運営部: Kimi K2.5（顧客5件超で本格稼働）
+- CEO: Claude Code Opus 4.7（Max $100/月）— 振り分け・最終判断・監督
+- 営業・リサーチ部長: Opus 4.6 サブ → Kimi K2.5 を道具（稼働中）
+- 制作・品質部長: Opus 4.6 サブ → Codex を道具（稼働中）→ 2026-05にCursor PRO移行判断
+- マーケ・運営部長: Opus 4.6 サブ → Kimi を道具（顧客5件超で本格稼働）
+- 秘書室: Opus 4.6 サブ → Notion MCP（問い合わせ型のみ稼働・2週間試運転後に自動モード移行）
 
 ## ✅ 直近完了（過去7日）
 
 - 2026-04-20: Notion タスク棚卸し実施（1件を✅完了・1件を備考更新）
 - 2026-04-20: Safari iOS overflow-x バグ修正（デモ4件 + rules.md ルール36 + mobile-nav.md）
+- 2026-04-20: cc-company サブエージェント化 Phase 1-3 完了（agents/ 4指示書・CLAUDE.md/agent-operations/shared-context 新構造化・秘書ノートページ作成）
 - 2026-04-20: スマホ⇔Mac運用設計完了（.claude/mobile-ops.md 新規作成・Notionタスク4件追加）
 - 2026-04-19: v2-final整理プロジェクト実施（.claude/ 3ファイル追加・current-state.md新設・Notion追記）
 - 2026-04-19: v1.11 デモサイト4件モバイルナビ修正完了（mori/akari inset fix push済み）
@@ -60,6 +62,7 @@
 
 - Notion NovaTech 現在の状態: `33cfbbb9-a761-8195-9a33-f3d07f41a42e`
 - Notion タスク一覧DB: `33afbbb9-a761-8113-9273-d71ec47f0c6c`
+- Notion 秘書ノート: `348fbbb9-a761-8193-8003-cd196408daf2`
 - Notion 場面別クイック一覧DB: `33afbbb9-a761-80d8-83d2-efc7ed424f05`
 - Notion 将来検討事項: `345fbbb9a76181bdab89d5bd6ca26e2d`
 - Notion 分析サマリー: `33efbbb9-a761-818a-8d90-c15c7f5f249e`
