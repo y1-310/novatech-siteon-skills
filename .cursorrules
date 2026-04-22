@@ -60,6 +60,30 @@
 
 - 架空データ（店名・住所・電話番号・スタッフ名）を全セクションで一致させる
 
+## アニメーションルール
+
+原則：アニメーションの唯一の正当な理由は「視線誘導」
+
+### 画像へのアニメーション：原則禁止
+以下の要素に `fade-in` / `slide-up` / `zoom-in` 等のアニメーションクラスを付けてはならない:
+- `img` 全て / `figure` / `.image-card` / `.gallery-item`
+- `.service-card` / `.strength-card` / `.works-card` / `.gallery-card`
+- `.profile-card` / `.portrait-stack` / `.member` / `.stat-card` / `.company-gallery`
+
+理由: translateY アニメーションはグリッド内で隣接要素に視覚的に衝突する（CLS的問題）
+
+### アニメーションを付けて良い要素のみ
+- `h2`: opacity + translateY(16px)、0.6s ease-out
+- `p`（本文）: opacity + translateY(12px)、0.6s
+- ヒーローキャッチコピー: opacity + translateY(20px)
+- CTAボタン hover: transform:scale(1.03)
+- ナビ/モーダル開閉: opacity + transform
+
+### 例外：単独画像のopacityフェードのみ許可（条件付き）
+- グリッド外の単独画像のみ
+- opacity フェードのみ（translateY禁止）
+- 0.8s 以内
+
 ## 生成後に必ず実行（QA）
 
 ```bash
