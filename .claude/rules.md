@@ -47,6 +47,16 @@
 34. **2カラムグリッド（company-grid / contact-grid 等）は `align-items: stretch` を使用する**。`start` では左右の下端が揃わない。
 35. **全 `<img>` タグに `width` と `height` 属性を必ず設定する**（hero含む）。未設定は CLS（累積レイアウトシフト）の原因になり Lighthouse スコアを低下させる。
 36. **`html` と `body` の両方に `overflow-x: hidden` を必ず設定する**。`body` だけでは Safari iOS でマーキー等の `width: max-content` 要素がページ幅を膨張させ、コンテンツが画面左半分に寄り右半分が空白になるバグが発生する。Chrome / Puppeteer では再現しないため実機確認が必須。
+37. **CSS Grid の `grid-template-columns: 1fr` は `minmax(0, 1fr)` で書く**。`1fr` は `minmax(auto, 1fr)` の略であり、アイテムの min-content がコンテナ幅を超えるとトラックが膨張し水平オーバーフローを起こす。モバイルブレークポイント内・セクションラッパーの単一列定義は全て `minmax(0, 1fr)` にする。
+38. **`display: grid` を持つセクションラッパーには `grid-template-columns` を必ず明示する**。省略すると暗黙の auto トラックがアイテムの max-content 幅で確定し、コンテンツが画面幅を超えてもクリップされない。`display: grid;` と書いたら必ず次行に `grid-template-columns: minmax(0, 1fr);` を書く。
+39. **flex コンテナ内に `display: grid` を持つ要素は `min-width: 0` を追加する**。flex アイテムのデフォルト `min-width: auto` はアイテムの min-content で決まるため、内部の grid が想定より広い幅を要求するとコンテナが押し広げられる。
+
+### オートレイアウト崩れ検査チェックリスト（生成後・デプロイ前）
+
+- [ ] モバイル375px での `body.scrollWidth` が 375 以下か（Puppeteer または DevTools で確認）
+- [ ] `display: grid` のある全要素に `grid-template-columns` が明示されているか
+- [ ] モバイルブレークポイント内の `1fr` が `minmax(0, 1fr)` になっているか
+- [ ] flex コンテナ内の grid 要素に `min-width: 0` があるか
 
 ## 5. アクセシビリティ（8項目）
 

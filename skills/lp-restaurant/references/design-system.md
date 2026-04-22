@@ -175,7 +175,7 @@ lp-salon と同一仕様。Features/Conceptセクションで写真2枚横並び
 ```css
 .feature-dual .feature-images {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
   gap: 8px;
 }
 ```

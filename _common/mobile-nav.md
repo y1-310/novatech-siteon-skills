@@ -226,6 +226,30 @@ body { overflow-x: hidden; }
 ```
 **原因**: `width: max-content` + CSS `transform` アニメーション（マーキー等）が Safari iOS のスクロール幅計算をトリガーし、`body` 単体の `overflow-x: hidden` では封じ込めできない。Chrome / Puppeteer では再現しないため実機（iPhone Safari）での確認が必須。
 
+### ❌ CSS Grid `1fr` によるトラック膨張（コンテンツが左半分に寄る）
+```css
+/* NG: 1fr = minmax(auto, 1fr) — アイテム min-content がコンテナを超えると膨張 */
+@media (max-width: 820px) {
+  .hero-grid { grid-template-columns: 1fr; }
+}
+/* NG: display:grid のラッパーに columns を省略 — 暗黙 auto トラック */
+.hero { display: grid; }
+/* NG: flex コンテナ内の grid 要素に min-width 指定なし */
+.philosophy-text { display: grid; flex: 1; }
+```
+→ 以下の3点を必ず守る（`.claude/rules.md` カテゴリ4 ルール37–39）:
+```css
+/* ✅ モバイルブレークポイント内: minmax(0, 1fr) を使う */
+@media (max-width: 820px) {
+  .hero-grid { grid-template-columns: minmax(0, 1fr); }
+}
+/* ✅ display:grid のラッパーには columns を必ず明示 */
+.hero { display: grid; grid-template-columns: minmax(0, 1fr); }
+/* ✅ flex 内 grid 要素には min-width: 0 を追加 */
+.philosophy-text { display: grid; grid-template-columns: minmax(0, 1fr); flex: 1; min-width: 0; }
+```
+**原因**: `grid-template-columns` を省略すると暗黙 auto トラックがアイテムの max-content 幅で決定する。`1fr` は `minmax(auto, 1fr)` の略であり、アイテムに `min-width: 0` がなければトラックが viewport を超える。いずれも Chrome / Puppeteer では再現しにくく、実機 iPhone Safari でのみ顕在化する。
+
 ---
 
 ## 業態別ブレークポイント参考
