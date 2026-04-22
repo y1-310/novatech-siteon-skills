@@ -7,6 +7,33 @@ Claude Codeからの指示に従い、大量のテキスト・コード・デー
 ## 共通ルール参照
 本リポジトリの `.claude/shared-context.md` を必ず参照し、3モデル（Claude Code / Codex / Kimi K2.5）共通のNovaTech理念・品質ルール・ブランドガイドラインに従うこと。本ファイルと矛盾した場合は shared-context.md を優先する。
 
+## 利用可能スキル（~/.codex/skills 経由で自動ロード）
+
+### 業態別 LP スキル
+- lp-salon — 単独店舗の女性向け美容室
+- lp-barber — メンズバーバー（ダークトーン基調）
+- lp-nail-esthe — ネイル・エステ・まつエク
+- lp-salon-group — 4店舗以上のグループ法人
+- lp-restaurant — 飲食店
+- lp-architect — 建築事務所
+- lp-corporate — サロン・飲食・建築以外の法人
+
+### ヒアリング・分岐スキル
+- salon-interview — サロン業態の分岐起点（業態判定後に各LPスキルへ）
+- restaurant-interview — 飲食店業態の分岐起点
+- architect-interview — 建築事務所業態の分岐起点
+- corporate-interview — 法人・企業業態の分岐起点
+
+### その他スキル
+- sns-template-v7 — SNS投稿画像生成
+
+### 共通スキル（Phase 3で追加予定）
+- japanese-copy — 日本語コピー全15ルール
+- image-selection — 画像選定・配置ルール
+- components — 共通演出要素・予約ボタン配置
+
+タスク依頼を受けたら、該当する業態スキルと共通スキルを必ず先に読み込んで作業開始すること。
+
 ## 絶対に守ること
 - Inter / Arial / Roboto / Helvetica は使用禁止
 - HTMLはセマンティック（header/nav/main/section/footer）
