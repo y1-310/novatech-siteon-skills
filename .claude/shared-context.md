@@ -255,3 +255,13 @@ Yuichi「ルール変えて」→ Claude Code が一括更新：
 | 2026-04-18 | インフラ品質ルール追加（https_enforced 確認必須・siteon.jp SSL障害の再発防止） | Claude Code |
 | 2026-04-20 | セクション2をサブエージェント体制（CEO + 部署長4役）に書き換え。Notion クエリ最適化ルール（notion-query-rules.md 参照）追加。サロンカルテ → 事業者カルテ に統一 | Claude Code |
 | 2026-04-22 | v3.0-3.2 Codex CLI 統合: skills/ 全12件にfrontmatter追加 / _common/ の5件（japanese-copy・image-selection・components・mobile-nav・seo-base）をSkills化 / AGENTS.md にスキル一覧追記 / ~/.codex/skills symlink経由で Codex CLI と Claude Code がスキル共有。reservation-ui は共通化せず保留。Phase 5-7（Developer/ 棚卸し・GitHub精査・最終統合）は別日実施。 | Claude Code |
+| 2026-04-22 | cmux Phase 1 完了: cmux v0.63.2 インストール（/Applications/cmux.app）/ Ghostty最小設定 / .claude/cmux/ 配下6ファイル整備 / cmux運用ルール追加（下記セクション参照） | Claude Code |
+
+## cmux運用ルール（2026-04-22 Phase 1追加）
+
+- メインターミナルは **cmux**。Warpは保険として残す（ロールバック用）
+- 中央34"モニターで Claude Code / Codex CLI / 組込みブラウザ の3分割が標準レイアウト
+- 垂直タブは「タスク単位」で切る（命名規則は novatech-siteon-business/.claude/cmux/workspace-layout.md 参照）
+- 応答待ち通知は OSC 9/99/777 で cmux が自動キャッチ（個別実装不要）
+- Phase 3 以降、Socket APIでcc-company部署長サブエージェント起動フローと統合予定
+- Codex/Kimiを道具として使う時も、cmux内のペインで並列実行を推奨
