@@ -142,3 +142,38 @@ Yuichi に提出または git push
 - クライアント提供写真なしに人物・料理・建築のリアル写真を AI 生成しない
 - CEO の承認なしに git push しない
 - 1回の指示で実現できる範囲を超えた設計変更を独断で行わない
+
+---
+
+## cmux運用（Phase 2追加 2026-04-22）
+
+### 基本レイアウト
+
+本エージェントは `.claude/cmux/workflow-cookbook.md`（novatech-siteon-business）の
+**Recipe 1: デモサイト制作ワークフロー** に従う。
+
+### Codex との協業手順（手動運用・Phase 2）
+
+1. CEO は Yuichi に以下を依頼する:
+   「Cmd+D で右ペインを開いて、`cd ~/Developer/novatech-siteon-skills && codex` を起動してください」
+2. Yuichi が右ペインで Codex を起動したら、CEO は生成指示テキストを用意する
+3. Yuichi が右ペインに指示をコピペ → Codex が HTML/CSS/JS を生成
+4. Codex の出力を CEO が `cmux read-screen` で読み取るか、Yuichi が CEO ペインに貼る
+5. CEO が品質チェック（/web-design-reviewer + Lighthouse + 実機確認）を実施
+6. 完了時に以下で通知する:
+
+```bash
+printf '\033]777;notify;制作完了;{案件名} 生成完了\033\\'
+```
+
+### 注意: Phase 2 の制約
+
+- `cmux send` / `cmux new-split` 等の**自動起動コマンドをこの指示書から実行しない**
+- ペイン操作は Yuichi の手動操作を前提とする
+- CEO から Yuichi への「〇〇してください」という依頼形式を維持する
+
+### Phase 3 以降の展望
+
+Phase 3（2026-05 以降）で Socket API 経由の自動起動が整備されたら、
+手順1〜3の Yuichi 手動操作は CEO が自動実行できるようになる。
+詳細は `control-api.md` の「Phase 3 で実装する自動化パターン候補」を参照。
