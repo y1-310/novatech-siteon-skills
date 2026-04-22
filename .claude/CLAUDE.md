@@ -167,6 +167,16 @@ node tools/kimi.js --file data.json "このデータを分析して"
 5. クライアントサイトは必ず novatech-siteon-client- プレフィックスを付ける
 6. 大容量ファイル（画像10MB以上）はGoogle Driveに保存
 
+## 完了報告の絶対ルール
+
+- 「完了しました」「修正済みです」「問題ありません」は**Yuichi の実機 iPhone Safari 確認 OK の後のみ**使う
+- それ以前は「Yuichi の実機確認をお願いします」で止める
+- Lighthouse / Puppeteer / Mac ブラウザ / cmux は**全て参考扱い**
+
+詳細: `.claude/shared-context.md` §「完了の定義」
+モバイル運用プロトコル: `.claude/rules.md` カテゴリ 15
+深刻事例対応: `.claude/agents/field-strategist.md`（現場参謀）
+
 ## 既存スキルとの統合方針
 
 ### 残す（そのまま活用）
