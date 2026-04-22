@@ -1,3 +1,8 @@
+---
+name: lp-restaurant
+description: カフェ・レストラン・バー・居酒屋・ラーメン屋・定食屋（個人〜3店舗）向けLPまたは小規模サイトを生成する。restaurant-interviewが生成したJSONを受け取り、業態別デザイン方針→プラン判定→HTML/CSS/JS生成を実行する。
+---
+
 # lp-restaurant
 
 ## 目的

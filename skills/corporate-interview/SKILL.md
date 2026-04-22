@@ -1,3 +1,8 @@
+---
+name: corporate-interview
+description: 士業・コンサル・IT・クリエイティブ・小規模法人向けの企業LPヒアリングスキル。質問形式・Googleフォーム・Agent自動収集の3パターンでクライアント情報を収集し、lp-corporateを呼び出す。サロン・飲食・建築以外の法人系案件の起点となる必須スキル。
+---
+
 # corporate-interview — 企業LP向けヒアリングスキル
 
 ## 目的

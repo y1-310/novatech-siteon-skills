@@ -1,3 +1,8 @@
+---
+name: restaurant-interview
+description: カフェ・レストラン・バー・居酒屋・ラーメン屋・定食屋向けのヒアリングスキル。質問形式（Round 0-5）またはGoogleフォームでクライアント情報を収集し、lp-restaurantが受け取るJSONを生成する。飲食店系案件の起点となる必須スキル。
+---
+
 # restaurant-interview
 
 ## 目的

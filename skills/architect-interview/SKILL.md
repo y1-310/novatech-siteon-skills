@@ -1,3 +1,8 @@
+---
+name: architect-interview
+description: 建築事務所・工務店・リノベーション会社向けのヒアリングスキル。質問形式・Googleフォーム・Agent自動収集の3パターンでクライアント情報を収集し、業態判定後にlp-architectを呼び出す。建築・工務・リノベ系案件の起点となる必須スキル。
+---
+
 # architect-interview — 建築事務所・工務店・リノベ向けヒアリングスキル
 
 ## 目的

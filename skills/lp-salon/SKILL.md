@@ -1,3 +1,8 @@
+---
+name: lp-salon
+description: 女性向け美容室・ヘアサロン（個人〜3名規模）のLPを生成する。salon-interviewで業態判定「美容室」と確定した後にヒアリングJSONを受け取り、プラン判定→参照ファイル分岐→HTML/CSS/JS生成を実行する。lp-salon-group（複数店舗）とは別スキルなので混同しない。
+---
+
 # lp-salon — 女性向け美容室・ヘアサロン
 
 ## 対象

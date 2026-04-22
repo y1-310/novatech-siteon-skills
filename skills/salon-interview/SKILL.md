@@ -1,3 +1,8 @@
+---
+name: salon-interview
+description: 美容室・バーバー・ネイル・エステ・まつエク・グループサロン向けのヒアリングスキル。Round 0-5の質問形式・Googleフォーム・Agent自動収集の3パターンでクライアント情報を収集し、業態判定後にlp-salon/lp-barber/lp-nail-esthe/lp-salon-groupのいずれかを呼び出す。サロン系案件の起点となる必須スキル。
+---
+
 # salon-interview — サロン向けヒアリングスキル
 
 ## 目的

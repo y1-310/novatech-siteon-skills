@@ -1,3 +1,8 @@
+---
+name: sns-template-v7
+description: Instagram/SNS向け投稿画像をHTMLテンプレートから生成するスキル。data/*.jsonを受け取りscripts/render.jsでPNG/WebP出力する。バッチ生成・GitHub Actions自動化に対応。SNS画像生成・投稿素材作成タスクで使用する。
+---
+
 # sns-template-v7 スキル
 
 NovaTech/SateOn SNS画像生成の公式スキル（v7）。
