@@ -254,3 +254,4 @@ Yuichi「ルール変えて」→ Claude Code が一括更新：
 | 2026-04-10 | 画像選定・品質ガイド追加（_common/image-guide.md v2.0 全7業態+NovaTech競合分析統合） | Claude Code |
 | 2026-04-18 | インフラ品質ルール追加（https_enforced 確認必須・siteon.jp SSL障害の再発防止） | Claude Code |
 | 2026-04-20 | セクション2をサブエージェント体制（CEO + 部署長4役）に書き換え。Notion クエリ最適化ルール（notion-query-rules.md 参照）追加。サロンカルテ → 事業者カルテ に統一 | Claude Code |
+| 2026-04-22 | v3.0-3.2 Codex CLI 統合: skills/ 全12件にfrontmatter追加 / _common/ の5件（japanese-copy・image-selection・components・mobile-nav・seo-base）をSkills化 / AGENTS.md にスキル一覧追記 / ~/.codex/skills symlink経由で Codex CLI と Claude Code がスキル共有。reservation-ui は共通化せず保留。Phase 5-7（Developer/ 棚卸し・GitHub精査・最終統合）は別日実施。 | Claude Code |
