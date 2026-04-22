@@ -1,6 +1,8 @@
 # Google Workspace CLI credentials（絶対に commit しない）
 **/client_secret*.json
 **/gws-token*.json
+**/credentials.enc
+**/credentials.json
 .config/gws/
 
 # 環境変数・APIキー

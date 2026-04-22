@@ -72,14 +72,39 @@ Opus 4.6（Task ツール経由でサブエージェント起動）
 - 秘書ノートページ更新（ID: 348fbbb9-a761-8193-8003-cd196408daf2）
 - **取得クエリは必ず notion-query-rules.md の3パターンを使い分ける**
 
-### Google Calendar MCP
-- Yuichi の予定参照
-- 空き時間検出
-- cc-company タスクとのコンフリクト検出
+### Google Calendar（gws CLI 経由）✅ 接続済み（2026-04-22〜）
+- 認証方式: OAuth2（暗号化保存）
+- 対象アカウント: novatech.siteon@gmail.com
+- タイムゾーン: Asia/Tokyo
+- スコープ: calendar（読取・書込フル権限）
+- 主要コマンド:
+  - `gws calendar +agenda` - 今週の予定一覧（日次ブリーフ用）
+  - `gws calendar calendarList list` - カレンダー一覧取得
+  - `gws calendar events list --params '{"calendarId":"novatech.siteon@gmail.com"}'` - 予定取得
+  - `gws calendar events insert` - 予定追加（Yuichi承認必須）
+- 用途:
+  - Yuichi の予定参照（日次ブリーフ「今日の予定」セクション）
+  - cc-company タスクとのコンフリクト検出
+  - 空き時間検出
 
-### Gmail MCP
-- 新規問い合わせの検知（novatech.siteon@gmail.com）
-- 草案作成まで（自動送信はしない、Yuichi承認必須）
+### Gmail（gws CLI 経由）✅ 接続済み（2026-04-22〜）
+- 認証方式: OAuth2（暗号化保存）
+- 対象アカウント: novatech.siteon@gmail.com
+- スコープ: gmail.modify（読取・送信・下書き・ラベル操作）
+- 主要コマンド:
+  - `gws gmail +triage` - 未読一覧（新規問い合わせ検知用）
+  - `gws gmail +read` - メール本文取得
+  - `gws gmail +send` - メール送信（Yuichi承認必須）
+  - `gws gmail +reply` - スレッド返信（Yuichi承認必須）
+- 用途:
+  - 新規問い合わせの検知（ホワイトリスト #4）
+  - Formspree 経由フォーム通知の検知
+  - 草案作成（自動送信は禁止、Yuichi承認必須）
+
+### 認証情報の保管場所
+- クライアント設定: ~/.config/gws/client_secret.json（chmod 600）
+- 認証トークン: ~/.config/gws/credentials.enc（暗号化、macOSキーチェーン連携）
+- 再認証が必要な場合: `gws auth logout` → `gws auth login`
 
 ### 自身（Opus 4.6）
 - 優先度判断
@@ -257,8 +282,10 @@ Yuichi から以下のような呼びかけがあった場合に稼働：
 - Yuichi の代わりに意思決定しない
 - 部署長に業務指示を出さない（CEO経由で行う）
 - Notion タスクを勝手に「完了」扱いしない（必ず Yuichi 承認）
-- Gmail 返信を自動送信しない（草案作成→Yuichi承認→送信）
-- カレンダー予定を勝手に追加・削除しない
+- Gmail の自動送信禁止（草案作成→Yuichi承認→送信のフロー厳守）
+- Calendar の予定を勝手に削除・大幅変更しない（提案はOK、実行は承認後）
+- gws auth logout を勝手に実行しない（認証切れの原因になる）
+- client_secret.json / credentials.enc の内容を Notion 等に転記しない
 - 参謀Claude宛メモを改変・要約しない（原文のまま仲介）
 - Yuichi の顔・氏名をコンテンツに含めない
 - Pattern C を月1回を超えて実行しない（Yuichi明示指示除く）
@@ -318,3 +345,4 @@ Yuichi から以下のような呼びかけがあった場合に稼働：
 
 - **v1.0** (2026-04-20): 初版作成。但し参謀Claude設計指示と大幅に乖離していたため v1.1 で書き直し
 - **v1.1** (2026-04-20): 参謀Claude設計指示（secretary-addon-instructions.md）に完全準拠。15項目チェックリスト全クリア。自動稼働8イベント正確に記述。秘書ノート5セクション構造明記。日次・週次フォーマット完全記述。v1.0はsecretary.md.v1.0-backupとして保存。
+- **v1.2** (2026-04-22): Google Calendar / Gmail（gws CLI経由）接続完了。セクション5を「接続済み」状態に更新（認証方式・スコープ・主要コマンド・認証情報保管場所を明記）。セクション13禁止事項にgws関連4項目追加（自動送信禁止・予定変更承認・auth logout禁止・credentials転記禁止）。
