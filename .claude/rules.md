@@ -505,3 +505,42 @@ gh api -X PUT repos/{owner}/{repo}/pages -f cname={domain} -F https_enforced=tru
 - 指示にないフォント・色・レイアウトの追加
 - **スタッフ・代表者写真にUnsplash使用**（Pollinations.ai必須）
 - **地中海/villa/mediterranean スタイル建築写真の lp-architect への使用**
+
+---
+
+## 17. 自律運用ルール (2026-04-25 追加)
+
+### 基本原則
+cc-company の各AIは、Yuichiや参謀Claudeが毎回指示しなくても
+自律的に起動・連携する。
+
+### 起動責任
+
+| AI | 起動権限者 | 自律起動条件 |
+|---|---|---|
+| 参謀Claude | Yuichi | Yuichi対話開始時 |
+| CEO Claude Code | Yuichi | claude code起動時 |
+| 制作・品質部署長 | CEO Claude Code | コード生成完了時自動 |
+| 秘書室 | CEO Claude Code | 情報集約要求時自動 |
+| Codex | CEO Claude Code | HTML/CSS/JS生成タスク時 |
+| Kimi | CEO Claude Code | リサーチ/日本語コピー時 |
+
+### 判断権限
+- 戦略判断: 参謀Claude + Yuichi
+- タスク振り分け: CEO Claude Code(自律)
+- 品質判定: 制作・品質部署長 sub-agent(自律)
+- 例外対応: Yuichi 承認必須
+
+### 書き込み権限
+- Notion書き込み: CEO Claude Code のみ
+- Git commit/push: CEO Claude Code(Yuichi承認後)
+- skill更新: CEO Claude Code(参謀Claude提案+Yuichi承認後)
+
+### 自律性の限界
+以下は必ず Yuichi 承認を要する:
+- 外部サービスへの課金決定
+- Git push(本番反映)
+- クライアント向けコミュニケーション
+- 戦略レベルの方針変更
+
+詳細フロー → `.claude/production-flow.md`

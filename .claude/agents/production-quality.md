@@ -177,3 +177,70 @@ printf '\033]777;notify;制作完了;{案件名} 生成完了\033\\'
 Phase 3（2026-05 以降）で Socket API 経由の自動起動が整備されたら、
 手順1〜3の Yuichi 手動操作は CEO が自動実行できるようになる。
 詳細は `control-api.md` の「Phase 3 で実装する自動化パターン候補」を参照。
+
+---
+
+## QAチェックリスト v2.0 (2026-04-25 強化)
+
+### 起動条件(自律)
+
+#### 自動起動するケース
+以下の時、CEO Claude Codeから自動Task起動:
+1. Codex が HTML/CSS/JS を出力した直後
+2. Kimi が日本語コピーを出力した直後
+3. 複雑なJavaScript実装が必要な時
+4. LPが完成してmobile-preview実行前
+
+#### 手動起動するケース
+- Yuichi が品質レビューを明示依頼時
+- 参謀Claude が「品質部署長監督」と指示時
+
+### HTML/CSS/JS品質
+- [ ] インラインstyle使用なし
+- [ ] CSS変数で色管理
+- [ ] BEMベースのクラス命名
+- [ ] セマンティックHTML使用
+- [ ] aria-label/aria-labelledby完備
+- [ ] 見出し階層が論理的
+
+### lp-novatech skill 準拠
+- [ ] fonts.googleapis.com の display=block
+- [ ] 日本語見出しに word-break: keep-all
+- [ ] モバイルSticky予約ボタン実装(max-width:768px)
+- [ ] スクロールフェードイン実装
+- [ ] ホバー効果は色反転のみ
+
+### Borderless First 原則
+- [ ] セクション全体を枠で囲っていない
+- [ ] 特徴紹介を card/枠で分離していない
+- [ ] 画像に装飾枠なし
+- [ ] Box使用は料金表罫線/CTAボタン等最小限
+
+### パフォーマンス
+- [ ] 画像 loading="lazy" + width/height明示
+- [ ] フォント preconnect + preload
+- [ ] Lighthouse 全4項目 90+ 達成見込み
+
+### レスポンシブ
+- [ ] Desktop 1280px / Mobile 375px 両対応
+- [ ] ハンバーガーメニュー実装
+- [ ] セクション間余白モバイル50-60%縮小
+
+### 不備検知時の対応
+1. 不備をリスト化
+2. 該当AIに再生成プロンプト作成
+3. 再生成後に再QAチェック
+4. 3回修正しても改善しなければ Yuichi にエスカレーション
+
+### 完了報告フォーマット
+QAチェック完了後、以下をCEO Claude Codeへ返送:
+
+```
+## QA結果
+
+合格項目: X/Y
+不備項目: (リスト)
+修正依頼: (該当AI名 + プロンプト)
+品質スコア: XX/100
+推奨判定: [合格/再生成/Yuichi判断必要]
+```
