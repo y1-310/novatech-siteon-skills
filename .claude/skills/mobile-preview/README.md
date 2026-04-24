@@ -66,6 +66,16 @@ node scripts/mobile-preview.js http://localhost:8888/ /tmp/previews
 🎉 完了: 成功 6 / 失敗 0
 ```
 
+## 実行後の動作
+
+- 撮影完了後、macOS では自動的に Finder で出力先を開きます
+- 不要な場合は `--no-open` 引数を追加してください
+
+```bash
+# Finder 展開なし
+node scripts/mobile-preview.js ./index.html /tmp/previews --no-open
+```
+
 ## 既知の制約
 
 - iOS Safari 固有の CSS バグ（`-webkit-` 系）は Chromium では検知できない

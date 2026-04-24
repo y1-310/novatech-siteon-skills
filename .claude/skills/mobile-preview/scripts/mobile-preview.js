@@ -14,6 +14,7 @@
 const { chromium, devices } = require('@playwright/test');
 const path = require('path');
 const fs = require('fs');
+const { exec } = require('child_process');
 
 // 引数処理
 const args = process.argv.slice(2);
@@ -157,7 +158,19 @@ const testDevices = [
 
   await browser.close();
   console.log(`\n🎉 完了: 成功 ${successCount} / 失敗 ${failCount}`);
-  console.log(`📂 open "${outputDirArg}" で確認できます`);
+
+  const shouldOpen = !args.includes('--no-open');
+  if (process.platform === 'darwin' && shouldOpen) {
+    exec(`open "${outputDirArg}"`, (err) => {
+      if (err) {
+        console.error(`⚠️ Finder 展開失敗: ${err.message}`);
+      } else {
+        console.log(`📂 Finder で ${outputDirArg} を開きました`);
+      }
+    });
+  } else {
+    console.log(`📂 open "${outputDirArg}" で確認できます`);
+  }
 
   if (failCount > 0) process.exit(1);
 })();
