@@ -1,4 +1,4 @@
-# mobile-preview skill
+# mobile-preview skill v1.1
 
 ## 1. 目的
 
@@ -7,6 +7,16 @@
 
 Playwright を使用して実際の CSS/JS 描画済み状態を画像化するため、
 Lighthouse の desktop エミュレーションより精度が高い。
+
+## v1.1 変更点
+
+| 項目 | v1.0 | v1.1 |
+|------|------|------|
+| フェード要素 | opacity:0 のまま空白 | CSS強制上書きで opacity:1 に |
+| IntersectionObserver | 未発火 | 全ページスクロールで発火 |
+| lazy-load 画像 | 未読み込み | スクロール後に読み込み完了 |
+| フォント待機 | なし | document.fonts.ready を待機 |
+| デバイス構成 | iPhone-14-Pro / Galaxy-S9+ / iPad-Mini | iPhone-17-Pro / Galaxy-S24 / iPad-Air-13 に刷新 |
 
 ## 2. 使用方法（Claude Code への指示例）
 
@@ -42,14 +52,14 @@ node .claude/skills/mobile-preview/scripts/mobile-preview.js \
   ~/Developer/novatech-siteon-client-bloom/previews
 ```
 
-## 3. 対応デバイス一覧
+## 3. 対応デバイス一覧（v1.1 刷新）
 
 | デバイス名 | 解像度 | 用途 |
 |---|---|---|
-| iPhone-14-Pro | 393×852 (deviceScaleFactor: 3) | iOS Safari 主流機種 |
+| iPhone-17-Pro | 402×874 (deviceScaleFactor: 3) | iOS Safari 2024-2025 主流機種 |
 | iPhone-SE | 375×667 (deviceScaleFactor: 2) | iOS Safari 最小基準 |
-| Galaxy-S9 | 360×740 (deviceScaleFactor: 4) | Android Chrome 基準 |
-| iPad-Mini | 744×1133 (deviceScaleFactor: 2) | タブレット確認 |
+| iPad-Air-13 | 1024×1366 (deviceScaleFactor: 2) | タブレット確認（大画面） |
+| Galaxy-S24 | 384×857 (deviceScaleFactor: 3) | Android Chrome 2024 基準 |
 | Desktop-1280 | 1280×800 | デスクトップ標準 |
 | Desktop-1920 | 1920×1080 | デスクトップ Wide |
 

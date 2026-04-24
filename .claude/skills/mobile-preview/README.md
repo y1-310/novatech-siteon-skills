@@ -1,9 +1,20 @@
-# mobile-preview — 多デバイスフルページスクショスキル
+# mobile-preview v1.1 — 多デバイスフルページスクショスキル
 
 ## 概要
 
 静的 LP / HTML を Playwright で 6 デバイス分フルページ撮影する共通ツール。
 NovaTech 全案件で使い回せる恒久資産。
+
+## v1.1 改修内容
+
+**問題**: v1.0 ではヒーロー以外のセクションが空白になる現象が発生。
+**原因**: IntersectionObserver による `.fade-in` 要素が `opacity:0` のまま撮影されていた。
+
+**修正内容**:
+1. フェードイン/トランジション CSS を撮影前に強制無効化
+2. 全ページスクロールで IntersectionObserver と `loading="lazy"` を発火
+3. `document.fonts.ready` でフォント完全読み込みを保証
+4. デバイス構成を 2024–2025 主流機種に刷新（iPhone-17-Pro / Galaxy-S24 / iPad-Air-13）
 
 ## セットアップ（初回のみ）
 
@@ -45,12 +56,12 @@ node scripts/mobile-preview.js http://localhost:8888/ /tmp/previews
 📸 撮影開始: file:///Users/.../index.html
 📁 保存先: /tmp/previews
 
-✅ iPhone-14-Pro  → /tmp/previews/preview-iPhone-14-Pro.png (1204KB)
-✅ iPhone-SE      → /tmp/previews/preview-iPhone-SE.png (892KB)
-✅ Galaxy-S9      → /tmp/previews/preview-Galaxy-S9.png (967KB)
-✅ iPad-Mini      → /tmp/previews/preview-iPad-Mini.png (1453KB)
-✅ Desktop-1280   → /tmp/previews/preview-Desktop-1280.png (1820KB)
-✅ Desktop-1920   → /tmp/previews/preview-Desktop-1920.png (2105KB)
+✅ iPhone-17-Pro   → /tmp/previews/preview-iPhone-17-Pro.png (1204KB)
+✅ iPhone-SE       → /tmp/previews/preview-iPhone-SE.png (892KB)
+✅ iPad-Air-13     → /tmp/previews/preview-iPad-Air-13.png (1453KB)
+✅ Galaxy-S24      → /tmp/previews/preview-Galaxy-S24.png (967KB)
+✅ Desktop-1280    → /tmp/previews/preview-Desktop-1280.png (1820KB)
+✅ Desktop-1920    → /tmp/previews/preview-Desktop-1920.png (2105KB)
 
 🎉 完了: 成功 6 / 失敗 0
 ```
