@@ -1,0 +1,20 @@
+{
+  "commands": {
+    "site-gen": {
+      "label": "🏗️ サイト生成",
+      "command": "claude --prompt 'ヒアリングJSONからサイト生成を開始してください'"
+    },
+    "kimi-research": {
+      "label": "🔍 Kimiリサーチ",
+      "command": "node tools/kimi.js"
+    },
+    "qa-check": {
+      "label": "✅ 品質チェック",
+      "command": "bash tools/qa-check.sh"
+    },
+    "sns-prepare": {
+      "label": "📱 SNS週次準備",
+      "command": "claude --prompt 'SNS週次投稿の準備を開始してください'"
+    }
+  }
+}

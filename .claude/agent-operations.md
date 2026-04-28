@@ -221,3 +221,45 @@ Formspreeが処理
   ① novatech.siteon@gmail.com → Agent が検知・対応
   ② クライアントのメール → クライアントが直接対応（予約等）
 ```
+
+---
+
+## cmux ワークスペース運用ルール
+
+### ワークスペース命名規則
+
+| ワークスペース名 | 用途 |
+|-----------------|------|
+| ceo             | CEO（Claude Code）メイン作業 |
+| seisaku-{client} | 制作・品質部: クライアントサイト作業 |
+| eigyo           | 営業・リサーチ部: Kimiリサーチ |
+| sns             | SNS運用作業（Phase 3以降） |
+| hisho           | 秘書室: gws CLI・通知管理 |
+
+### 通知ルール
+
+- Claude Code session hooks で自動通知が発火する
+- エージェントが入力待ちになるとサイドバーに青リングが表示される
+- Cmd+Shift+U で最新の未読ワークスペースにジャンプ
+- 長時間タスク完了時は `cmux notify` でデスクトップ通知を送る
+
+### 並列作業時のルール
+
+1. 各エージェントは専用ワークスペースで動かす（混在禁止）
+2. サイドバーの status/progress で進捗を可視化する
+3. ワークスペース間のデータ受け渡しはJSON形式（既存ルール準拠）
+
+### よく使うコマンド
+
+```bash
+# ワークスペース作成・命名
+cmux new-workspace
+cmux rename-workspace "seisaku-bloom"
+
+# 通知送信（タスク完了時）
+cmux notify --title "制作完了" --body "BLOOM Lighthouse 95点"
+
+# 進捗表示
+cmux set-progress 0.75
+cmux log --level success "HTML生成完了"
+```
