@@ -230,11 +230,11 @@ Formspreeが処理
 
 | ワークスペース名 | 用途 |
 |-----------------|------|
-| ceo             | CEO（Claude Code）メイン作業 |
-| seisaku-{client} | 制作・品質部: クライアントサイト作業 |
-| eigyo           | 営業・リサーチ部: Kimiリサーチ |
-| sns             | SNS運用作業（Phase 3以降） |
-| hisho           | 秘書室: gws CLI・通知管理 |
+| CEO             | CEO（Claude Code）メイン作業 |
+| 制作ブース       | 制作・品質部: クライアントサイト作業 |
+| 営業             | 営業・リサーチ部: Kimiリサーチ |
+| SNS             | SNS運用作業（Phase 3以降） |
+| 秘書室           | 秘書室: gws CLI・通知管理 |
 
 ### 通知ルール
 
