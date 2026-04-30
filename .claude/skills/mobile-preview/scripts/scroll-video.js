@@ -1,5 +1,5 @@
 /**
- * scroll-video.js v1.0 — スムーズスクロール動画録画（Instagram リール用）
+ * scroll-video.js v1.1 — スムーズスクロール動画録画（Instagram リール用）
  *
  * デバイス: iPhone 17 Pro (402x874 viewport)
  * 出力: MP4 H.264 (1080x1920) / FFmpegなし時は WebM
@@ -56,10 +56,11 @@ const mp4Path = path.join(outputDir, `${siteName}_scroll_${dateStr}.mp4`);
 const webmFallbackPath = path.join(outputDir, `${siteName}_scroll_${dateStr}.webm`);
 
 // ── 定数 ────────────────────────────────────────────────────────────────────
-const SCROLL_PX_PER_SEC = 80;
-const MAX_SCROLL_SEC = 11; // スクロール最大11秒 + 底部2秒 + トップ2秒 ≒ 15秒
+const SCROLL_PX_PER_SEC = 90;  // @60fps = 1.5px/frame
+const MAX_SCROLL_SEC = 11;      // スクロール最大11秒 + 底部2秒 + トップ2秒 ≒ 15秒
+const EASE_SEC = 1.0;           // 開始・終了それぞれ1秒だけ ease-in/out
 const BOTTOM_PAUSE_MS = 2000;
-const TOP_PAUSE_MS = 2000; // ファーストビューを見せる
+const TOP_PAUSE_MS = 2000;
 
 // ── FFmpeg チェック ──────────────────────────────────────────────────────────
 function hasFfmpeg() {
@@ -72,7 +73,13 @@ function hasFfmpeg() {
   console.log(`🎬 録画開始: ${targetUrl}`);
   console.log(`📁 出力先: ${mp4Path}\n`);
 
-  const browser = await chromium.launch();
+  const browser = await chromium.launch({
+    args: [
+      '--disable-background-timer-throttling',
+      '--disable-backgrounding-occluded-windows',
+      '--disable-renderer-backgrounding',
+    ],
+  });
 
   const context = await browser.newContext({
     viewport: { width: 402, height: 874 },
@@ -109,22 +116,52 @@ function hasFfmpeg() {
     console.log(`   ページ高さ: ${totalHeight}px`);
 
     if (totalHeight > 0) {
-      const scrollDurationMs = Math.min(totalHeight / SCROLL_PX_PER_SEC, MAX_SCROLL_SEC) * 1000;
-      console.log(`▶️  スクロール録画中... (${(scrollDurationMs / 1000).toFixed(1)}秒)`);
+      const scrollDurationSec = Math.min(totalHeight / SCROLL_PX_PER_SEC, MAX_SCROLL_SEC);
+      console.log(`▶️  スクロール録画中... (RAF 90px/s / ${scrollDurationSec.toFixed(1)}秒)`);
 
-      // setInterval で 50ms 刻み (20fps) — headless RAF より確実
+      // RAF ベース — 開始・終了1秒だけ ease-in/out、中間は等速
       await page.evaluate(
-        ({ duration, bottomPauseMs }) => new Promise((resolve) => {
+        ({ durationSec, vMax, easeSec, bottomPauseMs }) => new Promise((resolve) => {
           const totalH = document.documentElement.scrollHeight - window.innerHeight;
-          const start = Date.now();
-          function easeInOut(t) { return t < 0.5 ? 2 * t * t : -1 + (4 - 2 * t) * t; }
-          const id = setInterval(() => {
-            const t = Math.min((Date.now() - start) / duration, 1);
-            window.scrollTo(0, totalH * easeInOut(t));
-            if (t >= 1) { clearInterval(id); setTimeout(resolve, bottomPauseMs); }
-          }, 50);
+
+          // 時刻 t（秒）における目標スクロール位置
+          function getPos(t) {
+            const T = durationSec;
+            const e = easeSec;
+            const clampT = Math.min(t, T);
+            const posAtEaseEnd  = vMax * e / 2;                  // ease-in 終了時の位置
+            const posAtEaseStart2 = posAtEaseEnd + vMax * (T - 2 * e); // ease-out 開始時の位置
+
+            if (clampT <= e) {
+              // ease-in: v = vMax * (t/e)
+              return vMax * clampT * clampT / (2 * e);
+            } else if (clampT >= T - e) {
+              // ease-out: v = vMax * (1 - (t-(T-e))/e)
+              const t2 = clampT - (T - e);
+              return posAtEaseStart2 + vMax * t2 - vMax * t2 * t2 / (2 * e);
+            } else {
+              // 等速
+              return posAtEaseEnd + vMax * (clampT - e);
+            }
+          }
+
+          let startTs = null;
+          function frame(timestamp) {
+            if (!startTs) startTs = timestamp;
+            const elapsed = (timestamp - startTs) / 1000;
+            const pos = Math.min(getPos(elapsed), totalH);
+            window.scrollTo(0, pos);
+
+            if (elapsed < durationSec && pos < totalH) {
+              requestAnimationFrame(frame);
+            } else {
+              window.scrollTo(0, totalH);
+              setTimeout(resolve, bottomPauseMs);
+            }
+          }
+          requestAnimationFrame(frame);
         }),
-        { duration: scrollDurationMs, bottomPauseMs: BOTTOM_PAUSE_MS }
+        { durationSec: scrollDurationSec, vMax: SCROLL_PX_PER_SEC, easeSec: EASE_SEC, bottomPauseMs: BOTTOM_PAUSE_MS }
       );
     } else {
       console.log('▶️  スクロール不要（ページ高さ ≤ viewport）— 3秒静止録画');
@@ -158,7 +195,7 @@ function hasFfmpeg() {
         'scale=1080:1920:force_original_aspect_ratio=decrease',
         'pad=1080:1920:(ow-iw)/2:(oh-ih)/2:color=black',
       ].join(',');
-      const cmd = `ffmpeg -y -i "${videoPath}" -vf "${vf}" -c:v libx264 -crf 23 -preset fast -pix_fmt yuv420p "${mp4Path}"`;
+      const cmd = `ffmpeg -y -i "${videoPath}" -vf "${vf}" -r 60 -c:v libx264 -crf 20 -preset fast -pix_fmt yuv420p "${mp4Path}"`;
       exec(cmd, (err, _stdout, stderr) => {
         if (err) reject(new Error(stderr)); else resolve();
       });
