@@ -263,3 +263,27 @@ cmux notify --title "制作完了" --body "BLOOM Lighthouse 95点"
 cmux set-progress 0.75
 cmux log --level success "HTML生成完了"
 ```
+
+
+---
+
+## 成果物の通知ルール
+
+### 保存先
+
+- 成果物は Git リポジトリ内に保存して push する（追加フォルダは作らない）
+- テスト用の一時ファイルは `/tmp` に置き、不要になったら削除する
+
+### 完了通知（必須）
+
+タスク完了時、ターミナルに以下のフォーマットを**必ず**表示すること。省略禁止。
+
+```
+📁 成果物の場所:
+  /Users/satouyuuichi/Developer/novatech-siteon-skills/output/bloom_scroll.mp4
+
+🔍 確認コマンド:
+  open /Users/satouyuuichi/Developer/novatech-siteon-skills/output/bloom_scroll.mp4
+```
+
+Yuichiが「`open` + パス」をコピペするだけで確認できる状態にする。
