@@ -56,9 +56,8 @@ const mp4Path = path.join(outputDir, `${siteName}_scroll_${dateStr}.mp4`);
 const webmFallbackPath = path.join(outputDir, `${siteName}_scroll_${dateStr}.webm`);
 
 // ── 定数 ────────────────────────────────────────────────────────────────────
-const SCROLL_PX_PER_SEC = 90;  // @60fps = 1.5px/frame
+const SCROLL_PX_PER_SEC = 90;  // 中盤の一定速度
 const MAX_SCROLL_SEC = 11;      // スクロール最大11秒 + 底部2秒 + トップ2秒 ≒ 15秒
-const EASE_SEC = 1.0;           // 開始・終了それぞれ1秒だけ ease-in/out
 const BOTTOM_PAUSE_MS = 2000;
 const TOP_PAUSE_MS = 2000;
 
@@ -109,59 +108,62 @@ function hasFfmpeg() {
     console.log(`   ファーストビュー静止 (${TOP_PAUSE_MS / 1000}秒)...`);
     await page.waitForTimeout(TOP_PAUSE_MS);
 
-    // 4. ease-in-out スムーズスクロール（setInterval ベース — headless でも安定）
+    // 4. リニアスクロール（位置ベースeasing）
+    //    最初10%: 0→90px/s に加速、中盤80%: 90px/s 一定、最後10%: 90→0px/s に減速
     const totalHeight = await page.evaluate(
       () => document.documentElement.scrollHeight - window.innerHeight
     );
     console.log(`   ページ高さ: ${totalHeight}px`);
 
     if (totalHeight > 0) {
-      const scrollDurationSec = Math.min(totalHeight / SCROLL_PX_PER_SEC, MAX_SCROLL_SEC);
-      console.log(`▶️  スクロール録画中... (RAF 90px/s / ${scrollDurationSec.toFixed(1)}秒)`);
+      console.log(`▶️  スクロール録画中... (90px/s リニア / 最大${MAX_SCROLL_SEC}秒)`);
 
-      // RAF ベース — 開始・終了1秒だけ ease-in/out、中間は等速
       await page.evaluate(
-        ({ durationSec, vMax, easeSec, bottomPauseMs }) => new Promise((resolve) => {
+        ({ vMax, maxSec, bottomPauseMs }) => new Promise((resolve) => {
           const totalH = document.documentElement.scrollHeight - window.innerHeight;
+          let currentY = 0;
+          let lastTs = null;
+          let startTs = null;
 
-          // 時刻 t（秒）における目標スクロール位置
-          function getPos(t) {
-            const T = durationSec;
-            const e = easeSec;
-            const clampT = Math.min(t, T);
-            const posAtEaseEnd  = vMax * e / 2;                  // ease-in 終了時の位置
-            const posAtEaseStart2 = posAtEaseEnd + vMax * (T - 2 * e); // ease-out 開始時の位置
-
-            if (clampT <= e) {
-              // ease-in: v = vMax * (t/e)
-              return vMax * clampT * clampT / (2 * e);
-            } else if (clampT >= T - e) {
-              // ease-out: v = vMax * (1 - (t-(T-e))/e)
-              const t2 = clampT - (T - e);
-              return posAtEaseStart2 + vMax * t2 - vMax * t2 * t2 / (2 * e);
-            } else {
-              // 等速
-              return posAtEaseEnd + vMax * (clampT - e);
+          // 位置の割合に応じた速度を返す
+          function getVelocity(y) {
+            const progress = y / totalH;
+            if (progress < 0.1) {
+              // 最初10%: ease-in（二次曲線で0→vMax）
+              const t = progress / 0.1;
+              return vMax * t * t;
+            } else if (progress > 0.9) {
+              // 最後10%: ease-out（二次曲線でvMax→0）
+              const t = (1 - progress) / 0.1;
+              return vMax * t * t;
             }
+            // 中盤80%: 一定速度
+            return vMax;
           }
 
-          let startTs = null;
           function frame(timestamp) {
             if (!startTs) startTs = timestamp;
-            const elapsed = (timestamp - startTs) / 1000;
-            const pos = Math.min(getPos(elapsed), totalH);
-            window.scrollTo(0, pos);
+            if (!lastTs) lastTs = timestamp;
 
-            if (elapsed < durationSec && pos < totalH) {
+            const elapsed = (timestamp - startTs) / 1000;
+            const dt = Math.min((timestamp - lastTs) / 1000, 0.05); // max 50ms
+            lastTs = timestamp;
+
+            const vel = getVelocity(currentY);
+            currentY = Math.min(currentY + vel * dt, totalH);
+            window.scrollTo(0, currentY);
+
+            if (currentY < totalH && elapsed < maxSec) {
               requestAnimationFrame(frame);
             } else {
-              window.scrollTo(0, totalH);
+              window.scrollTo(0, Math.min(currentY, totalH));
               setTimeout(resolve, bottomPauseMs);
             }
           }
+
           requestAnimationFrame(frame);
         }),
-        { durationSec: scrollDurationSec, vMax: SCROLL_PX_PER_SEC, easeSec: EASE_SEC, bottomPauseMs: BOTTOM_PAUSE_MS }
+        { vMax: SCROLL_PX_PER_SEC, maxSec: MAX_SCROLL_SEC, bottomPauseMs: BOTTOM_PAUSE_MS }
       );
     } else {
       console.log('▶️  スクロール不要（ページ高さ ≤ viewport）— 3秒静止録画');
