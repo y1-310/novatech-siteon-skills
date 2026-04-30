@@ -89,54 +89,45 @@ function hasFfmpeg() {
   let success = false;
 
   try {
-    // 1. ページ読み込み
-    await page.goto(targetUrl, { waitUntil: 'networkidle', timeout: 30000 });
+    // 1. ページ読み込み（外部画像で networkidle が止まるため domcontentloaded を使用）
+    await page.goto(targetUrl, { waitUntil: 'domcontentloaded', timeout: 30000 });
 
-    // 2. フォント・画像完全読み込み待ち
-    await page.evaluate(async () => {
-      await document.fonts.ready;
-      await Promise.all(
-        Array.from(document.images)
-          .filter(img => !img.complete)
-          .map(img => new Promise(r => { img.onload = img.onerror = r; }))
-      );
-    });
+    // 2. 固定5秒待機（外部フォント・画像・JS の描画を待つ）
+    console.log('   ページ安定待ち (5秒)...');
+    await page.waitForTimeout(5000);
 
     // 3. トップに戻して安定待ち（アニメーション有効のまま録画するため CSS無効化はしない）
     await page.evaluate(() => window.scrollTo(0, 0));
     await page.waitForTimeout(800);
 
-    // 4. ease-in-out スムーズスクロール（requestAnimationFrame ベース）
-    console.log('▶️  スクロール録画中...');
-    await page.evaluate(
-      async ({ pxPerSec, maxSec, bottomPauseMs }) => {
-        await new Promise((resolve) => {
-          const totalHeight =
-            document.documentElement.scrollHeight - window.innerHeight;
-          if (totalHeight <= 0) { resolve(); return; }
-
-          const duration = Math.min(totalHeight / pxPerSec, maxSec) * 1000;
-          const start = performance.now();
-
-          function easeInOut(t) {
-            return t < 0.5 ? 2 * t * t : -1 + (4 - 2 * t) * t;
-          }
-
-          function step(now) {
-            const t = Math.min((now - start) / duration, 1);
-            window.scrollTo(0, totalHeight * easeInOut(t));
-            if (t < 1) {
-              requestAnimationFrame(step);
-            } else {
-              setTimeout(resolve, bottomPauseMs);
-            }
-          }
-
-          requestAnimationFrame(step);
-        });
-      },
-      { pxPerSec: SCROLL_PX_PER_SEC, maxSec: MAX_SCROLL_SEC, bottomPauseMs: BOTTOM_PAUSE_MS }
+    // 4. ease-in-out スムーズスクロール（setInterval ベース — headless でも安定）
+    const totalHeight = await page.evaluate(
+      () => document.documentElement.scrollHeight - window.innerHeight
     );
+    console.log(`   ページ高さ: ${totalHeight}px`);
+
+    if (totalHeight > 0) {
+      const scrollDurationMs = Math.min(totalHeight / SCROLL_PX_PER_SEC, MAX_SCROLL_SEC) * 1000;
+      console.log(`▶️  スクロール録画中... (${(scrollDurationMs / 1000).toFixed(1)}秒)`);
+
+      // setInterval で 50ms 刻み (20fps) — headless RAF より確実
+      await page.evaluate(
+        ({ duration, bottomPauseMs }) => new Promise((resolve) => {
+          const totalH = document.documentElement.scrollHeight - window.innerHeight;
+          const start = Date.now();
+          function easeInOut(t) { return t < 0.5 ? 2 * t * t : -1 + (4 - 2 * t) * t; }
+          const id = setInterval(() => {
+            const t = Math.min((Date.now() - start) / duration, 1);
+            window.scrollTo(0, totalH * easeInOut(t));
+            if (t >= 1) { clearInterval(id); setTimeout(resolve, bottomPauseMs); }
+          }, 50);
+        }),
+        { duration: scrollDurationMs, bottomPauseMs: BOTTOM_PAUSE_MS }
+      );
+    } else {
+      console.log('▶️  スクロール不要（ページ高さ ≤ viewport）— 3秒静止録画');
+      await page.waitForTimeout(3000);
+    }
 
     success = true;
     console.log('⏹️  録画停止中...');
