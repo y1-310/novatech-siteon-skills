@@ -1,8 +1,11 @@
 /**
- * scroll-video.js v1.4 — スクロール動画録画（Instagram リール用）
+ * scroll-video.js v2.0 — ストップ&スクロール録画（Instagram リール用）
  *
  * 使い方: node scripts/scroll-video.js <URL or ./index.html>
  * 出力:   ./output/{サイト名}_scroll_{日付}.mp4
+ *
+ * highlights 配列でポイントを定義。各ポイント間を 200px/s で滑らかにスクロールし、
+ * 指定秒数停止する。他サイトはここの highlights を差し替えるだけ。
  */
 'use strict';
 
@@ -26,21 +29,56 @@ const siteName = targetUrl.startsWith('file://')
   ? path.basename(path.dirname(targetUrl.replace('file://', ''))) || 'site'
   : new URL(targetUrl).hostname.replace(/\W+/g, '-');
 
-const dateStr    = new Date().toISOString().slice(0, 10);
-const outputDir  = path.resolve(process.cwd(), 'output');
-const tmpDir     = path.join(outputDir, '_tmp');
-const mp4Path    = path.join(outputDir, `${siteName}_scroll_${dateStr}.mp4`);
-const webmPath   = path.join(outputDir, `${siteName}_scroll_${dateStr}.webm`);
+const dateStr   = new Date().toISOString().slice(0, 10);
+const outputDir = path.resolve(process.cwd(), 'output');
+const tmpDir    = path.join(outputDir, '_tmp');
+const mp4Path   = path.join(outputDir, `${siteName}_scroll_${dateStr}.mp4`);
+const webmPath  = path.join(outputDir, `${siteName}_scroll_${dateStr}.webm`);
 fs.mkdirSync(tmpDir, { recursive: true });
+
+// ── ハイライト設定（BLOOMデフォルト）────────────────────────────────────────
+// scrollTo: スクロール先 Y座標（px）/ pause: 停止時間（ms）
+const highlights = [
+  { scrollTo: 0,    pause: 2000 },  // ファーストビュー
+  { scrollTo: 900,  pause: 1500 },  // メニューセクション
+  { scrollTo: 2500, pause: 1500 },  // ギャラリー
+  { scrollTo: 4500, pause: 1500 },  // スタイル一覧
+  { scrollTo: 6000, pause: 1500 },  // 料金セクション
+  { scrollTo: 8000, pause: 2000 },  // CTA・フッター
+];
+
+// ── スクロール速度設定 ────────────────────────────────────────────────────────
+const SCROLL_STEP  = 10;   // px/ステップ
+const SCROLL_SPEED = 200;  // px/秒
+const SCROLL_DELAY = Math.round(SCROLL_STEP / SCROLL_SPEED * 1000); // 50ms
 
 function hasFfmpeg() {
   try { execSync('ffmpeg -version', { stdio: 'ignore' }); return true; }
   catch { return false; }
 }
 
+async function smoothScrollTo(page, from, to) {
+  if (from === to) return;
+  const step = from < to ? SCROLL_STEP : -SCROLL_STEP;
+  let pos = from;
+  while ((step > 0 && pos < to) || (step < 0 && pos > to)) {
+    pos = step > 0 ? Math.min(pos + step, to) : Math.max(pos + step, to);
+    await page.evaluate((y) => window.scrollTo(0, y), pos);
+    await page.waitForTimeout(SCROLL_DELAY);
+  }
+}
+
 // ── メイン ────────────────────────────────────────────────────────────────────
 (async () => {
+  // 推定尺を事前計算
+  const totalScrollDist = highlights.reduce((sum, h, i) =>
+    i === 0 ? sum : sum + Math.abs(h.scrollTo - highlights[i - 1].scrollTo), 0);
+  const scrollSec = totalScrollDist / SCROLL_SPEED;
+  const pauseSec  = highlights.reduce((s, h) => s + h.pause, 0) / 1000;
+  const estSec    = scrollSec + pauseSec;
+
   console.log(`🎬 録画開始: ${targetUrl}`);
+  console.log(`   推定尺: ${estSec.toFixed(1)}秒 (スクロール ${scrollSec.toFixed(1)}s + 停止 ${pauseSec.toFixed(1)}s)`);
   console.log(`📁 出力先: ${mp4Path}\n`);
 
   const browser = await chromium.launch({
@@ -56,49 +94,30 @@ function hasFfmpeg() {
   });
   const page = await context.newPage();
 
-  // 1. ページロード → 3秒待機
   await page.goto(targetUrl, { waitUntil: 'domcontentloaded', timeout: 30000 });
   console.log('   ページ安定待ち (3秒)...');
   await page.waitForTimeout(3000);
 
-  // 2. ファーストビュー 2秒静止
-  await page.evaluate(() => window.scrollTo(0, 0));
-  console.log('   ファーストビュー静止 (2秒)...');
-  await page.waitForTimeout(2000);
-
-  // 3. スクロール前のCSS修正
-  //    html+bodyの両方にoverflow-x:hiddenが設定されるとChromiumでスクロールが消える
-  //    scroll-behavior:smoothは即時反映を妨げる → 両方を auto に上書き
+  // Chromium スクロールバグ回避
   await page.addStyleTag({
     content: 'html, body { overflow: auto !important; scroll-behavior: auto !important; }'
   });
   await page.waitForTimeout(200);
 
-  // Playwrightループでスクロール（ページ高さに応じて速度を動的計算）
-  const totalHeight = await page.evaluate(
-    () => document.body.scrollHeight - window.innerHeight
-  );
-  console.log(`   ページ高さ: ${totalHeight}px`);
-  console.log('▶️  スクロール中...');
-
-  // 目標スクロール時間: 15秒 / フレーム間隔: 30ms
-  const TARGET_SCROLL_MS = 15000;
-  const scrollDelay = 30;
-  const totalSteps  = Math.round(TARGET_SCROLL_MS / scrollDelay);   // 500ステップ
-  const scrollStep  = Math.max(1, Math.round(totalHeight / totalSteps));
-  console.log(`   速度: ${Math.round(scrollStep * 1000 / scrollDelay)}px/s (${scrollStep}px × ${scrollDelay}ms)`);
-
-  let scrolled = 0;
-  while (scrolled < totalHeight) {
-    await page.evaluate((step) => window.scrollBy(0, step), scrollStep);
-    scrolled += scrollStep;
-    await page.waitForTimeout(scrollDelay);
+  // ハイライト再生
+  let currentPos = 0;
+  for (const h of highlights) {
+    if (h.scrollTo !== currentPos) {
+      const dist = Math.abs(h.scrollTo - currentPos);
+      console.log(`   → ${currentPos}px → ${h.scrollTo}px (${dist}px, ${(dist / SCROLL_SPEED).toFixed(1)}s)`);
+      await smoothScrollTo(page, currentPos, h.scrollTo);
+      currentPos = h.scrollTo;
+    }
+    console.log(`   ⏸  ${h.scrollTo}px で ${h.pause / 1000}s 停止`);
+    await page.waitForTimeout(h.pause);
   }
 
-  // 4. 最下部 2秒静止
-  await page.waitForTimeout(2000);
-
-  console.log('⏹️  録画停止中...');
+  console.log('\n⏹️  録画停止中...');
   const videoPath = await page.video()?.path();
   await context.close();
   await browser.close();
@@ -108,7 +127,6 @@ function hasFfmpeg() {
     process.exit(1);
   }
 
-  // 4. MP4変換 or WebMフォールバック
   const finalPath = hasFfmpeg() ? mp4Path : webmPath;
   if (hasFfmpeg()) {
     console.log('🔄 MP4変換中 (FFmpeg)...');
@@ -126,7 +144,6 @@ function hasFfmpeg() {
   }
   fs.rmSync(tmpDir, { recursive: true, force: true });
 
-  // 5. 通知・完了
   exec(`cmux notify --title "録画完了" --body "${siteName}_scroll_${dateStr}"`, () => {});
   if (process.platform === 'darwin') exec(`open "${outputDir}"`, () => {});
 
