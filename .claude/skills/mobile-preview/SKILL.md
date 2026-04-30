@@ -93,6 +93,47 @@ npx playwright install chromium
 | `file:// CORS エラー` | `python3 -m http.server` でローカルサーバー経由に切り替え |
 | `fonts not loaded` | スクリプト内の `document.fonts.ready` 待機が機能しているか確認 |
 
+## 7. スクロール動画録画（Instagram リール用）
+
+`scripts/scroll-video.js` でデモサイトのスムーズスクロール動画を MP4 録画できる。
+
+### コマンド
+
+```bash
+# 本番 URL を録画
+node .claude/skills/mobile-preview/scripts/scroll-video.js \
+  https://y1-310.github.io/novatech-siteon-client-bloom/
+
+# ローカルファイルを録画
+node .claude/skills/mobile-preview/scripts/scroll-video.js ./index.html
+```
+
+出力は実行ディレクトリの `output/` に保存される。
+ファイル名: `{サイト名}_scroll_{日付}.mp4`
+
+### 仕様
+
+| 項目 | 値 |
+|------|-----|
+| デバイス | iPhone 17 Pro (402×874, deviceScaleFactor:3) |
+| 出力サイズ | 1080×1920（縦型リール用、FFmpegでスケール） |
+| スクロール速度 | 200px/秒（ease-in-out） |
+| 底部停止 | 2秒 |
+| 最大録画時間 | 30秒（自動停止） |
+| 出力フォーマット | MP4 H.264 / FFmpegなし時は WebM |
+
+### 前提条件
+
+- Playwright インストール済み（`npm install` + `npx playwright install chromium`）
+- FFmpeg（MP4変換用、任意）: `brew install ffmpeg`
+
+### FFmpegなし時のフォールバック
+
+FFmpegが未インストールの場合は WebM 形式で保存される。  
+`brew install ffmpeg` 後に再実行すると MP4 で出力される。
+
+---
+
 ## 参謀Claude からのメモ
 
 - 新規案件でデモを作ったら必ずこのスキルで6デバイス撮影してから Yuichi に報告すること
