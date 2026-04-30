@@ -66,28 +66,25 @@ function hasFfmpeg() {
   console.log('   ファーストビュー静止 (2秒)...');
   await page.waitForTimeout(2000);
 
-  // 3. 一定速度スクロール（1.5px / 16ms = 90px/s）
+  // 3. Playwrightループでスクロール（5px × 55ms間隔 ≈ 90px/s）
   const totalHeight = await page.evaluate(
-    () => document.documentElement.scrollHeight - window.innerHeight
+    () => document.body.scrollHeight - window.innerHeight
   );
   console.log(`   ページ高さ: ${totalHeight}px`);
   console.log('▶️  スクロール中...');
 
-  await page.evaluate(
-    ({ totalH, pxPerTick, intervalMs, bottomPauseMs }) => new Promise((resolve) => {
-      if (totalH <= 0) { setTimeout(resolve, bottomPauseMs); return; }
-      let y = 0;
-      const id = setInterval(() => {
-        y = Math.min(y + pxPerTick, totalH);
-        window.scrollTo(0, y);
-        if (y >= totalH) {
-          clearInterval(id);
-          setTimeout(resolve, bottomPauseMs);
-        }
-      }, intervalMs);
-    }),
-    { totalH: totalHeight, pxPerTick: 1.5, intervalMs: 16, bottomPauseMs: 2000 }
-  );
+  const scrollStep  = 5;   // 1回あたり5px
+  const scrollDelay = 55;  // 55ms間隔
+
+  let scrolled = 0;
+  while (scrolled < totalHeight) {
+    await page.evaluate((step) => window.scrollBy(0, step), scrollStep);
+    scrolled += scrollStep;
+    await page.waitForTimeout(scrollDelay);
+  }
+
+  // 4. 最下部 2秒静止
+  await page.waitForTimeout(2000);
 
   console.log('⏹️  録画停止中...');
   const videoPath = await page.video()?.path();
