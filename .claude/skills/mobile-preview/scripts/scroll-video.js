@@ -56,9 +56,10 @@ const mp4Path = path.join(outputDir, `${siteName}_scroll_${dateStr}.mp4`);
 const webmFallbackPath = path.join(outputDir, `${siteName}_scroll_${dateStr}.webm`);
 
 // ── 定数 ────────────────────────────────────────────────────────────────────
-const SCROLL_PX_PER_SEC = 200;
-const MAX_SCROLL_SEC = 27; // スクロール最大27秒 + 底部2秒待機 = 29秒 < 30秒上限
+const SCROLL_PX_PER_SEC = 80;
+const MAX_SCROLL_SEC = 11; // スクロール最大11秒 + 底部2秒 + トップ2秒 ≒ 15秒
 const BOTTOM_PAUSE_MS = 2000;
+const TOP_PAUSE_MS = 2000; // ファーストビューを見せる
 
 // ── FFmpeg チェック ──────────────────────────────────────────────────────────
 function hasFfmpeg() {
@@ -92,13 +93,14 @@ function hasFfmpeg() {
     // 1. ページ読み込み（外部画像で networkidle が止まるため domcontentloaded を使用）
     await page.goto(targetUrl, { waitUntil: 'domcontentloaded', timeout: 30000 });
 
-    // 2. 固定5秒待機（外部フォント・画像・JS の描画を待つ）
-    console.log('   ページ安定待ち (5秒)...');
-    await page.waitForTimeout(5000);
+    // 2. 固定3秒待機（外部フォント・画像・JS の描画を待つ）
+    console.log('   ページ安定待ち (3秒)...');
+    await page.waitForTimeout(3000);
 
-    // 3. トップに戻して安定待ち（アニメーション有効のまま録画するため CSS無効化はしない）
+    // 3. トップに戻してファーストビューを見せる（TOP_PAUSE_MS）
     await page.evaluate(() => window.scrollTo(0, 0));
-    await page.waitForTimeout(800);
+    console.log(`   ファーストビュー静止 (${TOP_PAUSE_MS / 1000}秒)...`);
+    await page.waitForTimeout(TOP_PAUSE_MS);
 
     // 4. ease-in-out スムーズスクロール（setInterval ベース — headless でも安定）
     const totalHeight = await page.evaluate(
