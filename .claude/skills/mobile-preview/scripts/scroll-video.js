@@ -1,5 +1,5 @@
 /**
- * scroll-video.js v1.3 — スクロール動画録画（Instagram リール用）
+ * scroll-video.js v1.4 — スクロール動画録画（Instagram リール用）
  *
  * 使い方: node scripts/scroll-video.js <URL or ./index.html>
  * 出力:   ./output/{サイト名}_scroll_{日付}.mp4
@@ -66,15 +66,27 @@ function hasFfmpeg() {
   console.log('   ファーストビュー静止 (2秒)...');
   await page.waitForTimeout(2000);
 
-  // 3. Playwrightループでスクロール（5px × 55ms間隔 ≈ 90px/s）
+  // 3. スクロール前のCSS修正
+  //    html+bodyの両方にoverflow-x:hiddenが設定されるとChromiumでスクロールが消える
+  //    scroll-behavior:smoothは即時反映を妨げる → 両方を auto に上書き
+  await page.addStyleTag({
+    content: 'html, body { overflow: auto !important; scroll-behavior: auto !important; }'
+  });
+  await page.waitForTimeout(200);
+
+  // Playwrightループでスクロール（ページ高さに応じて速度を動的計算）
   const totalHeight = await page.evaluate(
     () => document.body.scrollHeight - window.innerHeight
   );
   console.log(`   ページ高さ: ${totalHeight}px`);
   console.log('▶️  スクロール中...');
 
-  const scrollStep  = 5;   // 1回あたり5px
-  const scrollDelay = 55;  // 55ms間隔
+  // 目標スクロール時間: 15秒 / フレーム間隔: 30ms
+  const TARGET_SCROLL_MS = 15000;
+  const scrollDelay = 30;
+  const totalSteps  = Math.round(TARGET_SCROLL_MS / scrollDelay);   // 500ステップ
+  const scrollStep  = Math.max(1, Math.round(totalHeight / totalSteps));
+  console.log(`   速度: ${Math.round(scrollStep * 1000 / scrollDelay)}px/s (${scrollStep}px × ${scrollDelay}ms)`);
 
   let scrolled = 0;
   while (scrolled < totalHeight) {
