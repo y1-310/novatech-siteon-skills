@@ -48,9 +48,9 @@ const highlights = [
 ];
 
 // ── スクロール速度設定 ────────────────────────────────────────────────────────
-const SCROLL_STEP  = 10;   // px/ステップ
+const SCROLL_STEP  = 2;    // px/ステップ（小さくしてカクつき防止）
 const SCROLL_SPEED = 200;  // px/秒
-const SCROLL_DELAY = Math.round(SCROLL_STEP / SCROLL_SPEED * 1000); // 50ms
+const SCROLL_DELAY = Math.round(SCROLL_STEP / SCROLL_SPEED * 1000); // 10ms
 
 function hasFfmpeg() {
   try { execSync('ffmpeg -version', { stdio: 'ignore' }); return true; }
