@@ -138,7 +138,16 @@ Notion タスク DB 取得は必ず `.claude/notion-query-rules.md` の Pattern 
 - 不足時のフォールバック順：
   1. placehold.co プレースホルダー → 写真揃い次第差し替え
   2. Unsplash / Pexels → 「実際のサロンではない」旨明記
-  3. AI 画像生成（Gemini 等） → 内装イメージのみ。スタイル写真・スタッフ写真は不可（デモサイト例外：後述）
+  3. AI 画像生成 → 内装イメージのみ。スタイル写真・スタッフ写真は不可（デモサイト例外：後述）
+
+### 画像生成の運用ルール（必読）
+
+**画像生成は Codex CLI（cmux上）で行う。**
+
+- OpenAI DALL-E API は使用しない。OPENAI_API_KEY は不要
+- `generate-images.py` 等のスクリプトは作成・使用禁止（既存ファイルは削除すること）
+- 画像生成が必要な場合は `prompts/` にプロンプトファイルを作成し、Yuichi が Codex CLI に投げる運用とする
+- Claude Code は `prompts/` の作成とプロンプト記述のみ担当する
 
 ---
 
