@@ -545,3 +545,46 @@ cc-company の各AIは、Yuichiや参謀Claudeが毎回指示しなくても
 - 戦略レベルの方針変更
 
 詳細フロー → `.claude/production-flow.md`
+
+---
+
+## 18. AI生成画像のリアリティ基準
+
+> 2026-05-04 akari（lp-corporate）のスタッフ写真でAI感の強い画像が発覚。デモサイトの信頼性を損なうため基準を明文化。
+
+### DALL-E（Codex CLI）人物写真プロンプト必須条件
+
+以下を全てのプロンプトに含めること：
+
+1. **顔を写さない構図を最優先**
+   - 後頭部・横顔シルエット・手元・肩越し・ぼかし越しを基本とする
+   - 正面顔が必要な場合のみ、以下の「リアリティ条件」を全て適用
+
+2. **正面顔が必要な場合のリアリティ条件**（全て必須）
+   - `natural skin texture with visible pores`（毛穴のある自然な肌質）
+   - `slight facial asymmetry`（微かな左右非対称）
+   - `natural eye reflections, not perfectly circular catchlights`（自然な目の反射）
+   - `subtle under-eye shadows`（目の下の自然な影）
+   - `natural hair with flyaways`（おくれ毛のある自然な髪）
+   - `shot with 85mm f/1.8 lens, shallow depth of field`（レンズ指定でカメラ撮影感を出す）
+   - `candid moment, not posing`（ポーズ感を消す）
+
+3. **禁止表現**
+   - `beautiful` / `perfect` / `flawless` / `smooth skin` → AI感が増す
+   - 真正面・完全シンメトリーの構図
+   - 均一なスタジオライティングのみ（自然光 or ミックス光を含めること）
+
+### 生成後の品質チェック
+
+画像生成後、以下のいずれかに該当したら再生成：
+- 肌がワックスのように均一（毛穴・シワ・ほくろが一切ない）
+- 目の虹彩が完全な円形
+- 歯が完全に均一な白
+- 髪の毛が1本単位で不自然に揃っている
+- 背景と人物の境界がにじんでいる
+
+### 対象範囲
+
+- 全デモサイト（test-*）の人物画像
+- 全クライアントサイトのプレースホルダー人物画像
+- akari（lp-corporate）の既存スタッフ写真は本ルール適用後に再生成対象
