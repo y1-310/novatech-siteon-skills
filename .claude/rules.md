@@ -621,3 +621,21 @@ cc-company の各AIは、Yuichiや参謀Claudeが毎回指示しなくても
 3. 同一ページ内で画像のトーン・色温度が統一されているか
 4. AI感チェック（§ 18 参照）
 5. モバイル表示でアスペクト比が崩れていないか
+
+---
+
+## 21. GitHub Pages デプロイ必須設定
+
+全てのGitHub Pagesリポに以下を必ず含めること。
+
+- `.nojekyll` ファイル（空ファイル）をルートに配置
+- 理由: GitHub PagesはデフォルトでJekyllを実行し、inline CSS/JS内の `{}` をLiquidテンプレートとして誤解釈・削除するため
+- 新規リポ作成時のチェックリスト項目に追加
+
+```bash
+# 作成コマンド
+touch .nojekyll
+git add .nojekyll
+git commit -m "fix: .nojekyll追加（Jekyll誤解釈防止）"
+git push
+```
