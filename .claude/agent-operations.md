@@ -232,6 +232,7 @@ Formspreeが処理
 |-----------------|------|
 | CEO             | CEO（Claude Code）メイン作業 |
 | 制作ブース       | 制作・品質部: クライアントサイト作業 |
+| 制作ブース２     | 画像生成・素材作成専用（Codex CLI） |
 | 営業             | 営業・リサーチ部: Kimiリサーチ |
 | SNS             | SNS運用作業（Phase 3以降） |
 | 秘書室           | 秘書室: gws CLI・通知管理 |
@@ -255,6 +256,9 @@ Formspreeが処理
 # ワークスペース作成・命名
 cmux new-workspace
 cmux rename-workspace "seisaku-bloom"
+
+# 制作ブース２（workspace:3）初回作成（cmux起動中に実行）
+cmux new-workspace --name "制作ブース２" --description "画像生成・素材作成専用（Codex CLI）"
 
 # 通知送信（タスク完了時）
 cmux notify --title "制作完了" --body "BLOOM Lighthouse 95点"
