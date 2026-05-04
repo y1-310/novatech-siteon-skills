@@ -219,7 +219,7 @@ git push
 
 # 3. cmux通知
 cmux notify --title "W19 SNS素材 生成完了" \
-  --body "20枚の画像 + スクロール動画を生成しました。月曜9:00に確認をお願いします。"
+  --body "20枚の画像 + スクロール動画を生成しました。月曜7:00に確認をお願いします。"
 
 # 4. Googleカレンダーのメモ更新（任意）
 # → 秘書室に依頼してGCalのStep 8予定に完了報告を追記
@@ -253,12 +253,37 @@ novatech-siteon-business/
 
 ---
 
+## Step 8: Instagram投稿（Yuichi承認後）
+
+**担当:** CEO Claude Code（Yuichi承認後に手動実行）  
+**前提:** Step 7完了 + Yuichi月曜7:00確認で承認済み
+
+```bash
+node sns/scripts/instagram-post.js \
+  --images "sns/images/2026-WNN/WNN-01/P1.png,P2.png,P3.png,P4.png" \
+  --caption "sns/captions/WNN.md" \
+  --post-id "WNN-01"
+```
+
+**運用ルール:**
+- Yuichiの承認なしに絶対に実行しない
+- 1日1投稿ペース（6投稿/週）
+- 投稿成功後に Slack #sns-analytics に通知（スクリプト自動送信）
+
+**注意:** 画像は GitHub Pages で公開されている必要がある
+- ベースURL: `https://y1-310.github.io/novatech-siteon-business/`
+- トークン期限切れ時は Instagram Graph API Explorer で再生成
+
+---
+
 ## 環境変数
 
 | 変数 | 用途 | 設定場所 |
 |------|------|---------|
 | `APIFY_API_TOKEN` | 競合分析（Step 1） | `~/.zshrc` |
 | `MOONSHOT_API_KEY` | Kimi K2.5（Step 3補助） | `~/.zshrc` |
+| `INSTAGRAM_BUSINESS_ACCOUNT_ID` | Instagram投稿（Step 8） | `~/.zshrc` |
+| `INSTAGRAM_ACCESS_TOKEN` | Instagram投稿（Step 8） | `~/.zshrc` |
 
 ---
 
