@@ -144,10 +144,12 @@ Notion タスク DB 取得は必ず `.claude/notion-query-rules.md` の Pattern 
 
 **画像生成は Codex CLI（cmux上）で行う。**
 
-- OpenAI DALL-E API は使用しない。OPENAI_API_KEY は不要
-- `generate-images.py` 等のスクリプトは作成・使用禁止（既存ファイルは削除すること）
-- 画像生成が必要な場合は `prompts/` にプロンプトファイルを作成し、Yuichi が Codex CLI に投げる運用とする
-- Claude Code は `prompts/` の作成とプロンプト記述のみ担当する
+- SNS投稿画像は Codex gpt-image-2 でテキスト込みの完成品を直接生成する
+- v7テンプレート（build-html.js / render.js）は使用しない
+- 生成ルールは AGENTS.md の「SNS投稿画像 — Codex完成品出力ルール」に従う
+- OpenAI DALL-E API 直接呼び出し・generate-images.py 等のスクリプトは使用禁止
+- Claude Code は生成指示の作成のみ担当し、画像生成自体は Codex が行う
+- 生成後の日本語テキスト誤字チェックは必須（Yuichi目視確認）
 
 ---
 
