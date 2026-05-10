@@ -2,6 +2,26 @@
 
 このファイルはInstagram投稿画像を生成する前に必ず全文読むこと。
 
+## 品質設定（必須）
+画像生成時は必ず quality: high を指定すること。
+デフォルト（low）では品質が大幅に劣化する。
+
+## 構造化プロンプト形式
+画像生成プロンプトは以下の形式で構造化すること:
+
+Use case: photorealistic-natural
+Asset type: Instagram carousel post
+Primary request: （生成内容の説明）
+Style/medium: （写真風/イラスト等）
+Composition/framing: （構図の指示）
+Lighting/mood: （照明・雰囲気）
+Color palette: （使用色）
+Text (verbatim): "（画像内テキスト一字一句正確に）"
+Constraints: （必須条件）
+Avoid: （禁止条件）
+
+この形式を使うことで、Codexの画像生成の品質と一貫性が向上する。
+
 ## 生成フロー
 
 1. このSKILL.mdを全文読む
