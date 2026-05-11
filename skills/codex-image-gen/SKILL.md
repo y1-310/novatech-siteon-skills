@@ -1,3 +1,8 @@
+---
+name: codex-image-gen
+description: Instagram投稿画像をCodex gpt-image-2で生成する際のルール
+---
+
 # Codex 画像生成スキル
 
 このファイルはInstagram投稿画像を生成する前に必ず全文読むこと。

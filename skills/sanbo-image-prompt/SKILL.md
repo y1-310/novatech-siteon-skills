@@ -1,3 +1,8 @@
+---
+name: sanbo-image-prompt
+description: 参謀Claude向け画像生成プロンプト品質基準
+---
+
 # 参謀Claude — 画像生成プロンプト作成スキル
 
 参謀Claude（claude.ai）がCodex向けの画像生成プロンプトを作成する際のルール。
