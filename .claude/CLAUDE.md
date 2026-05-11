@@ -188,38 +188,29 @@ node tools/kimi.js --file data.json "このデータを分析して"
 - /estimate → SITEONプラン料金表と連携
 
 ### 新規作成
-/salon-interview / /lp-salon / /lp-barber / /lp-nail-esthe / /lp-salon-group / /sns-generate
+/salon-interview / /lp-salon / /lp-barber / /lp-nail-esthe / /lp-salon-group
 
-## SNS画像生成（sns-template-v7）
+## SNS投稿画像生成（v3.0 Codex方式）
 
-### /sns-generate コマンド
+画像は Codex Desktop（gpt-image-2）で完成品として直接生成する。
+v7テンプレート（build-html.js / render.js）は廃止済み。`.archive/sns-template-v7/` に移動。
+詳細ワークフロー → `.claude/sns-workflow-v3.md`
 
-SNS投稿画像を生成する。`skills/sns-template-v7/` スキルを使用。
+### ツール・スクリプト
 
-```bash
-# ローカル単一生成
-cd /Users/satouyuuichi/Developer/novatech-siteon-skills/skills/sns-template-v7
-node scripts/render.js data/<file>.json
+| 用途 | スクリプト |
+|------|-----------|
+| カルーセル投稿（API） | `sns/scripts/instagram-post.js` |
+| 週次ドラフト生成 | GitHub Actions `weekly-auto-draft.yml` が自動実行 |
 
-# バッチ生成
-node scripts/render.js data/*.json
-
-# 検証のみ
-node scripts/validate.js data/<file>.json
-
-# WebP変換
-node scripts/generate-webp.js output/
-```
-
-### GitHub Actions（自動化）
+### GitHub Actions（現行）
 
 | ワークフロー | リポジトリ | トリガー |
 |------------|-----------|---------|
-| sns-generate.yml | novatech-siteon-business | sns/drafts/ へのpush |
-| weekly-auto-draft.yml | novatech-siteon-business | 毎週月曜9:00 JST |
+| weekly-auto-draft.yml | novatech-siteon-business | 毎週月曜7:00 JST |
 | update-demo-image.yml | 各client-* | mainブランチへのpush |
 
-### Notion DB（フェーズ6完了）
+### Notion DB
 
 | DB名 | URL | Secret名 |
 |-----|-----|---------|

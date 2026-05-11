@@ -25,7 +25,7 @@ Claude Codeからの指示に従い、大量のテキスト・コード・デー
 - corporate-interview — 法人・企業業態の分岐起点
 
 ### その他スキル
-- sns-template-v7 — SNS投稿画像生成
+- sns-image-codex — SNS投稿画像生成（Codex gpt-image-2 完成品出力）
 
 ### 共通スキル（Phase 3追加済み）
 - japanese-copy — 日本語コピー全15ルール（文体レベル・禁止カタカナ・文字数制限等）

@@ -8,7 +8,13 @@
     "next_preview": "次回：Googleマップ活用術",
     "publish_date": "2026-04-21",
     "status": "draft",
-    "caption": "美容室は毎年1万軒が新規開業しています。\n\n「技術があれば客は来る」——その考えだけでは難しくなっています。\n\n生き残るサロンが共通してやっていること、画像にまとめました。\n\n詳しくはプロフィールのリンクから ▷"
+    "caption": "美容室は毎年1万軒が新規開業しています。\n\n「技術があれば客は来る」——その考えだけでは難しくなっています。\n\n生き残るサロンが共通してやっていること、画像にまとめました。\n\n詳しくはプロフィールのリンクから ▷",
+    "bg_images": {
+      "P1": "assets/bg/pattern-a-p1.png",
+      "P2": "assets/bg/pattern-a-p2.png",
+      "P3": "assets/bg/pattern-a-p3.png",
+      "P4": "assets/bg/pattern-a-p4.png"
+    }
   },
   "pages": {
     "P1": {
