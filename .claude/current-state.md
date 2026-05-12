@@ -29,6 +29,9 @@
 
 ## ✅ 直近完了（過去7日）
 
+- 2026-05-12: GitHub Org 棚卸し完了（y1-310/novatech-studio 全15リポ精査、アーカイブ3件・ローカル削除7件、機密情報スキャン全クリーン、Phase 5-7 完了）
+- 2026-05-11: SNS v3.0移行完了（sns-generate.yml廃止・sns-template-v7アーカイブ・sns-workflow-v3.md作成・--cleanup実装・mv-snsエイリアス追加）
+- 2026-05-11: W21画像生成指示文5投稿分作成・20枚圧縮整備完了（1080x1080・200KB以下）
 - 2026-04-22: Calendar/Gmail MCP 接続完了（gws CLI経由、novatech.siteon@gmail.com認証、secretary.md v1.2反映、サブエージェント利用可、タイムゾーン Asia/Tokyo）
 - 2026-04-20: Phase 1.5 完了（Notion クエリ最適化、95%削減達成）
 - 2026-04-20: cc-company サブエージェント体制 Phase 1-3 完了（4役職再設計、秘書室新設、secretary.md v1.1準拠）
