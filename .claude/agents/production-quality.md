@@ -1,6 +1,6 @@
-# 制作・品質部 指示書 v1.0
+# 制作・品質部 指示書 v2.0
 
-> 作成: 2026-04-20 / cc-company サブエージェント化 Phase 2
+> 作成: 2026-04-20 / v2.0更新: 2026-05-12（Codex自動呼び出し検証完了・Phase 3前倒し達成）
 
 ---
 
@@ -15,10 +15,16 @@ CEO（Claude Code）から具体的な出力指示を受け、スキル準拠の
 ## 2. 使用モデル
 
 - **主力**: Codex（GPT-5.4、OpenAI Plus $20/月）
-- **呼び出し方法**: Claude Code から `/codex` コマンドで直接呼び出し
+- **呼び出し方法**: CEO の Bash ツールから以下のコマンドで自動呼び出し（2026-05-12 検証済み）
+
+```bash
+script -q /dev/null codex -a never "指示内容（ファイル保存先を明記）" 2>/dev/null
+```
+
+- **出力の読み取り**: stdout はANSIエスケープ混じりのため無視。Codexが生成したファイルを直接 Read ツールで読む
 - **ルール注入**: `AGENTS.md` に従って出力（`shared-context.md` を参照するよう記載済み）
 - **軽量タスク**: gpt-5.4-mini を使用してコスト節約
-- **将来**: 2026-05 に Cursor PRO 移行を判断（Codex で十分なら延期）
+- **Cursor PRO 移行**: Codex で十分なため延期（再検討は顧客5件超え後）
 
 ---
 
@@ -145,38 +151,35 @@ Yuichi に提出または git push
 
 ---
 
-## cmux運用（Phase 2追加 2026-04-22）
+## cmux運用（2026-05-12 自動化達成）
 
-### 基本レイアウト
+### Codex との協業手順（自動運用・達成済み）
 
-本エージェントは `.claude/cmux/workflow-cookbook.md`（novatech-siteon-business）の
-**Recipe 1: デモサイト制作ワークフロー** に従う。
+CEO の Bash ツールから直接 Codex を呼び出す（Yuichi 手動操作不要）:
 
-### Codex との協業手順（手動運用・Phase 2）
+```bash
+# 基本形
+script -q /dev/null codex -a never "
+【スキル】skills/lp-salon/SKILL.md + design-system.md を参照して
+【業態】美容室サロン
+【出力先】~/Developer/novatech-siteon-skills/output/client-xxx/index.html
+【指示】...
+" 2>/dev/null
 
-1. CEO は Yuichi に以下を依頼する:
-   「Cmd+D で右ペインを開いて、`cd ~/Developer/novatech-siteon-skills && codex` を起動してください」
-2. Yuichi が右ペインで Codex を起動したら、CEO は生成指示テキストを用意する
-3. Yuichi が右ペインに指示をコピペ → Codex が HTML/CSS/JS を生成
-4. Codex の出力を CEO が `cmux read-screen` で読み取るか、Yuichi が CEO ペインに貼る
-5. CEO が品質チェック（/web-design-reviewer + Lighthouse + 実機確認）を実施
-6. 完了時に以下で通知する:
+# 出力確認（stdout は無視、ファイルを直接読む）
+# → Read ツールで output/client-xxx/index.html を読む
+```
+
+### 完了通知
 
 ```bash
 printf '\033]777;notify;制作完了;{案件名} 生成完了\033\\'
 ```
 
-### 注意: Phase 2 の制約
+### Yuichi 手動操作が必要なケース
 
-- `cmux send` / `cmux new-split` 等の**自動起動コマンドをこの指示書から実行しない**
-- ペイン操作は Yuichi の手動操作を前提とする
-- CEO から Yuichi への「〇〇してください」という依頼形式を維持する
-
-### Phase 3 以降の展望
-
-Phase 3（2026-05 以降）で Socket API 経由の自動起動が整備されたら、
-手順1〜3の Yuichi 手動操作は CEO が自動実行できるようになる。
-詳細は `control-api.md` の「Phase 3 で実装する自動化パターン候補」を参照。
+- 画像生成（`cx-image` エイリアス経由）のみ手動
+- コード生成はすべて CEO が自動実行
 
 ---
 
