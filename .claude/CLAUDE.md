@@ -65,6 +65,7 @@ CEO (Claude Code Opus 4.7) = 振り分け・最終判断・監督
 - git操作・API呼び出しを実行する（実行）
 - エラーの原因を分析する（分析）
 - 顧客ステータスを管理する（管理）
+- コード品質ゲート: 制作完了後に `/codex:review` を自律実行し、クロスチェックする
 
 ### 各部署長の担当（全ての出力作業）
 
@@ -166,6 +167,7 @@ node tools/kimi.js --file data.json "このデータを分析して"
 4. APIキー・パスワードは絶対にGitHubリポジトリに入れない
 5. クライアントサイトは必ず novatech-siteon-client- プレフィックスを付ける
 6. 大容量ファイル（画像10MB以上）はGoogle Driveに保存
+12. HTML/CSS/JSの新規生成・大幅修正後は `/codex:review --wait` を実行してからYuichiに報告する
 
 ## 完了報告の絶対ルール
 
