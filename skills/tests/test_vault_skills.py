@@ -157,6 +157,15 @@ class TestSecretPatternCoverage(unittest.TestCase):
     def test_jwt(self):
         self.assertIn("jwt", self.detect("eyJhbGciOiJSUzI1NiJ9.eyJzdWIiOiJ1c2VyIn0"))
 
+    def test_slack_xapp(self):
+        self.assertIn("slack_app_token", self.detect("xapp-1-ABCDEF123456-789-xyz"))
+
+    def test_openssh_private_key(self):
+        self.assertIn("pem_private_key", self.detect("-----BEGIN OPENSSH PRIVATE KEY-----"))
+
+    def test_ec_private_key(self):
+        self.assertIn("pem_private_key", self.detect("-----BEGIN EC PRIVATE KEY-----"))
+
 
 # ---------------------------------------------------------------------------
 # 4. compile: protected dir and path traversal rejection
@@ -191,6 +200,37 @@ class TestCompilePathValidation(unittest.TestCase):
             v.raw("clean.md", "# Clean Note\n判断: 採用した\n")
             r = run(COMPILE, ["--vault", str(v.path), "--file", "clean.md", "--dry-run"])
             self.assertEqual(r.returncode, 0)
+
+    def test_raw_prefix_file_succeeds(self):
+        """compile --file Raw/foo.md (with Raw/ prefix) must succeed same as foo.md."""
+        with TmpVault() as v:
+            v.raw("notes.md", "# Notes\n判断: テスト採用\n")
+            r = run(COMPILE, ["--vault", str(v.path), "--file", "Raw/notes.md", "--dry-run"])
+            self.assertEqual(r.returncode, 0, r.stderr)
+
+    def test_secret_file_exits_nonzero(self):
+        """compile --file with secret content must exit non-zero."""
+        with TmpVault() as v:
+            v.raw("secret.md", "xapp-1-ABCDEF123456-789-xyz\n# Raw Note\n")
+            r = run(COMPILE, ["--vault", str(v.path), "--file", "secret.md", "--dry-run"])
+            self.assertNotEqual(r.returncode, 0)
+
+    def test_secret_file_no_body_in_stdout(self):
+        """compile --file with secret must not output file body to stdout."""
+        with TmpVault() as v:
+            marker = "SHOULD_NOT_APPEAR_IN_OUTPUT"
+            v.raw("secret.md", f"xapp-1-ABCDEF123456-789-xyz\n# {marker}\n")
+            r = run(COMPILE, ["--vault", str(v.path), "--file", "secret.md", "--dry-run"])
+            self.assertNotIn(marker, r.stdout)
+            self.assertNotIn(marker, r.stderr)
+
+    def test_secret_in_bulk_mode_exits_nonzero(self):
+        """compile (no --file) with at least one secret file must exit non-zero."""
+        with TmpVault() as v:
+            v.raw("secret.md", "-----BEGIN OPENSSH PRIVATE KEY-----\n# Raw Note\n")
+            v.raw("clean.md", "# Clean Note\n判断: 採用した\n")
+            r = run(COMPILE, ["--vault", str(v.path), "--dry-run"])
+            self.assertNotEqual(r.returncode, 0)
 
 
 # ---------------------------------------------------------------------------
@@ -241,6 +281,40 @@ class TestReportNoteSelection(unittest.TestCase):
             run(REPORT, ["--vault", str(v.path), "--topic", "topic", "--dry-run"])
             reports_after = sorted(str(p) for p in (v.path / "Reports").rglob("*"))
             self.assertEqual(reports_before, reports_after)
+
+    def test_symlink_outside_vault_not_selected(self):
+        """Auto-selection must not follow symlinks pointing outside vault."""
+        with TmpVault() as v:
+            outside = v.path.parent / "outside_note.md"
+            outside.write_text("# Outside\nnormal content\n", encoding="utf-8")
+            try:
+                link = v.path / "Projects" / "sym_note.md"
+                link.symlink_to(outside)
+                v.note("AI_INDEX.md", "# AI INDEX\n[[Projects/sym_note]]\n[[Projects/real]]\n")
+                v.note("Projects/real.md", "# Real note\nnormal content\n")
+                r = run(REPORT, ["--vault", str(v.path), "--topic", "sym note real",
+                                 "--dry-run"])
+                # symlink-outside note should not appear in sources
+                self.assertNotIn("sym_note", r.stdout)
+            finally:
+                if outside.exists():
+                    outside.unlink()
+
+    def test_mixed_ascii_japanese_topic(self):
+        """ASCII+日本語混在トピックでスコアリングが正しく動く。
+        flipradar→link path match、現在地→alias match で2件以上選択される。"""
+        with TmpVault() as v:
+            # 1st note: "flipradar" appears in link path
+            # 2nd note: "現在地" appears in alias text
+            v.note("AI_INDEX.md",
+                   "# AI INDEX\n"
+                   "| Project | [[Projects/flipradar/current]] |\n"
+                   "[[Projects/state|FlipRadar現在地ノート]]\n")
+            v.note("Projects/flipradar/current.md", "# FlipRadar Current\nnormal content\n")
+            v.note("Projects/state.md", "# State\nnormal content\n")
+            r = run(REPORT, ["--vault", str(v.path), "--topic", "FlipRadar現在地", "--dry-run"])
+            self.assertEqual(r.returncode, 0, r.stderr)
+            self.assertIn("flipradar", r.stdout.lower())
 
 
 # ---------------------------------------------------------------------------
@@ -382,6 +456,37 @@ class TestRealVaultDryRun(unittest.TestCase):
                 has_secrets(content),
                 f"Secret content found in report file: {p.name}",
             )
+
+    def test_report_flipradar_topic_dry_run(self):
+        """実Vault: FlipRadar現在地 トピックで exit 0、2〜15件、Raw/Reports なし、重複なし。"""
+        r = run(REPORT, ["--vault", str(self.VAULT), "--topic", "FlipRadar現在地", "--dry-run"])
+        self.assertEqual(r.returncode, 0, f"exit non-zero: {r.stderr}")
+        # 選択ノート数を stderr から抽出
+        import re as _re
+        m = _re.search(r'使用ノート \((\d+)件\)', r.stderr)
+        self.assertIsNotNone(m, f"note count not found in stderr: {r.stderr}")
+        count = int(m.group(1))
+        self.assertGreaterEqual(count, 2, "too few notes selected")
+        self.assertLessEqual(count, 15, "too many notes selected")
+        # Raw/ と Reports/ を含まない
+        for line in r.stdout.splitlines():
+            if line.startswith("  - "):
+                path = line.strip().lstrip("- ")
+                self.assertFalse(path.startswith("Raw/"), f"Raw/ note selected: {path}")
+                self.assertFalse(path.startswith("Reports/"), f"Reports/ note selected: {path}")
+        # 重複なし（source 行を収集）
+        sources = [l.strip().lstrip("- ") for l in r.stdout.splitlines()
+                   if l.startswith("  - ")]
+        self.assertEqual(len(sources), len(set(sources)), "duplicate sources detected")
+
+    def test_compile_raw_prefix_real_vault(self):
+        """実Vault: compile --file Raw/test-flipradar-sourcing-notes.md が成功する。"""
+        target = self.VAULT / "Raw" / "test-flipradar-sourcing-notes.md"
+        if not target.exists():
+            self.skipTest(f"test file not found: {target}")
+        r = run(COMPILE, ["--vault", str(self.VAULT), "--file",
+                          "Raw/test-flipradar-sourcing-notes.md", "--dry-run"])
+        self.assertEqual(r.returncode, 0, r.stderr)
 
 
 if __name__ == "__main__":

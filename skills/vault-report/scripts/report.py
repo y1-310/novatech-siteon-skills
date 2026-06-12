@@ -14,10 +14,19 @@ from typing import List, Optional
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent.parent))
 from vault_secrets import detect_secrets
 
-WIKILINK_PATTERN = re.compile(r'\[\[([^\]|#]+?)(?:[|#][^\]]*)?\]\]')
+WIKILINK_FULL = re.compile(r'\[\[([^\]|#]+?)(?:\|([^\]]*))?\]\]')
 MAX_NOTES = 15
 MIN_NOTES = 2
 _EXCLUDE_DIRS = {"Raw", "Reports", ".obsidian", ".git", "Archive"}
+
+
+def _tokenize_topic(topic: str) -> list:
+    """ASCII語と日本語語を分離してトークン化。最低2文字。"""
+    lower = topic.lower()
+    ascii_tokens = re.findall(r'[a-z0-9]{2,}', lower)
+    # CJK統合漢字・ひらがな・カタカナ
+    jp_tokens = re.findall(r'[぀-鿿豈-﫿]{2,}', topic)
+    return list(dict.fromkeys(ascii_tokens + jp_tokens))
 
 
 def resolve_note(target: str, vault: Path) -> Optional[Path]:
@@ -26,6 +35,7 @@ def resolve_note(target: str, vault: Path) -> Optional[Path]:
         vault / (clean + ".md"),
         vault / clean,
     ] + list(vault.rglob(f"{Path(clean).name}.md"))
+    vault_real = vault.resolve()
     for c in candidates:
         if not (c.exists() and c.is_file()):
             continue
@@ -35,29 +45,46 @@ def resolve_note(target: str, vault: Path) -> Optional[Path]:
                 continue
         except ValueError:
             continue
+        # symlink escape: 実体パスもVault配下か確認
+        try:
+            c.resolve().relative_to(vault_real)
+        except ValueError:
+            continue
         return c
     return None
 
 
 def select_notes_from_index(index_text: str, topic: str, vault: Path) -> List[Path]:
-    """スコア>0のノートのみ選択。Raw/Reportsは自動選択対象外。"""
-    topic_words = [w for w in re.split(r'\W+', topic.lower()) if len(w) >= 2]
+    """スコア>0のノートのみ選択。ASCII語・日本語語を分離してスコアリング。
+    link target・alias・同一行文脈を対象とする。Raw/Reportsは自動選択対象外。"""
+    topic_tokens = _tokenize_topic(topic)
     scored = []
-    for link in WIKILINK_PATTERN.findall(index_text):
-        link_parts = link.replace("\\", "/").split("/")
-        if any(part in _EXCLUDE_DIRS for part in link_parts):
-            continue
-        link_lower = link.lower()
-        score = sum(2 for word in topic_words if word in link_lower)
-        if "current" in link_lower and score > 0:
-            score += 1  # current bonus only when already topic-relevant
-        if score == 0:
-            continue
-        scored.append((score, link))
+    seen_links: set = set()
+
+    for line in index_text.splitlines():
+        for m in WIKILINK_FULL.finditer(line):
+            link = m.group(1)
+            alias = m.group(2) or ""
+            if link in seen_links:
+                continue
+            seen_links.add(link)
+
+            link_parts = link.replace("\\", "/").split("/")
+            if any(part in _EXCLUDE_DIRS for part in link_parts):
+                continue
+
+            # スコア対象: linkパス + alias + 同一行のテキスト全体
+            context = " ".join([link.lower(), alias.lower(), line.lower()])
+            score = sum(2 for token in topic_tokens if token in context)
+            if "current" in link.lower() and score > 0:
+                score += 1  # currentボーナスはトピック関連ノートのみ
+            if score == 0:
+                continue
+            scored.append((score, link))
 
     scored.sort(key=lambda x: -x[0])
     selected: List[Path] = []
-    seen: set = set()
+    seen_paths: set = set()
     for _, link in scored:
         if len(selected) >= MAX_NOTES:
             break
@@ -65,9 +92,9 @@ def select_notes_from_index(index_text: str, topic: str, vault: Path) -> List[Pa
         if resolved is None:
             continue
         real = resolved.resolve()
-        if real not in seen:
+        if real not in seen_paths:
             selected.append(resolved)
-            seen.add(real)
+            seen_paths.add(real)
     return selected
 
 

@@ -31,9 +31,15 @@ SOP_MARKERS = re.compile(
 
 
 def validate_file_arg(file_arg: str, vault: Path, raw_dir: Path) -> Path:
-    """--file を解決し Raw/ 配下であることを確認する。違反は stderr + exit(1)。"""
+    """--file を解決し Raw/ 配下であることを確認する。違反は stderr + exit(1)。
+    相対パスは `foo.md` と `Raw/foo.md` の両形式を受理する。"""
     p = Path(file_arg)
-    candidate = p.resolve() if p.is_absolute() else (raw_dir / file_arg).resolve()
+    if p.is_absolute():
+        candidate = p.resolve()
+    else:
+        # "Raw/foo.md" と "foo.md" の両方を raw_dir/foo.md として解決する
+        normalized = re.sub(r'^[Rr]aw[/\\]', '', file_arg)
+        candidate = (raw_dir / normalized).resolve()
 
     if any(protected in candidate.parts for protected in PROTECTED_DIRS):
         print(f"ERROR: 正本ディレクトリは処理対象外です: {file_arg}", file=sys.stderr)
@@ -160,6 +166,7 @@ def main():
 
     processed = 0
     skipped = 0
+    secret_skips = 0
     for target in targets:
         if not target.exists():
             print(f"[compile] SKIP (not found): {target.name}", file=sys.stderr)
@@ -174,7 +181,9 @@ def main():
         text = target.read_text(encoding="utf-8", errors="ignore")
         cats = detect_secrets(text)
         if cats:
+            # 本文は一切出力しない。ファイル名とカテゴリのみstderrへ
             print(f"[compile] SKIP (secret={','.join(cats)}): {target.name}", file=sys.stderr)
+            secret_skips += 1
             skipped += 1
             continue
 
@@ -191,6 +200,8 @@ def main():
         processed += 1
 
     print(f"[compile] 完了: {processed}件処理, {skipped}件スキップ", file=sys.stderr)
+    if secret_skips > 0:
+        sys.exit(1)
 
 
 if __name__ == "__main__":
