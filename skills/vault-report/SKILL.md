@@ -1,6 +1,6 @@
 ---
 name: vault-report
-description: AI_INDEX.md から関連ノートを選択（原則2〜15ファイル）し、根拠付きレポートを Knowledge/Reports/YYYY-MM-DD-<topic>.md に生成する。使用ノートを frontmatter または末尾参照一覧に記録する。Raw を直接根拠に断定せず検証済み正本を優先する。FlipRadar現在地・設計判断・手順確認など知識ベースのレポート生成で使用する。Notionタスク状態・Git正式仕様は書き換えない。
+description: AI_INDEX.md から関連ノートを選択（スコア>0の2〜15ファイル）し、機密スキャン後に根拠付きレポートを Reports/ に生成する。Raw/Reports は自動選択対象外。機密を含むノートはスキップし、残りが2件未満なら exit 1。--dry-run では Reports/ に書かない。
 ---
 
 # vault-report — 根拠付きレポート生成
@@ -13,29 +13,36 @@ AI_INDEX.md を入口に、必要なノートだけを選んでレポートを�
 python3 skills/vault-report/scripts/report.py \
   --vault /Users/satouyuuichi/Developer/Knowledge \
   --topic "FlipRadar現在地" \
-  [--notes "Projects/FlipRadar/current.md,Decisions/index.md"]  # 省略時は AI_INDEX から自動選択
+  [--notes "Projects/FlipRadar/current.md,Decisions/index.md"] \
+  [--dry-run]   # Reports/ に書かず stdout に表示
 ```
 
-## 動作
+## ノート選択ルール（自動選択時）
 
-1. `AI_INDEX.md` を読み、トピックに関連するノートを選ぶ（2〜15ファイル上限）
-2. 選択ノートを読み、根拠付きで要点をまとめる
-3. `Reports/YYYY-MM-DD-<topic>.md` に出力する
-4. frontmatter `sources:` に使用ノートのパスを列挙する
+- AI_INDEX.md のリンクからトピックワードとの一致度でスコアリング
+- スコア 0 のノートは自動選択しない
+- `current.md` ボーナス (+1) はスコアが既に > 0 の場合のみ加算
+- `Raw/` および `Reports/` は自動選択対象外
+- 最大 15 ファイル、解決できないリンクはスキップ
 
-## ノート選択の優先順位
+## --notes 指定時の制約
 
-1. `current.md`（現在地スナップショット）
-2. `Decisions/`（確定判断）
-3. `SOP/`（安定手順）
-4. `Lessons/`（再発防止）
-5. `Raw/`・過去ノートは「補足」として扱い、確定的な根拠にしない
+- Vault 配下の .md ファイルのみ指定可能
+- 絶対パス・シンボリックリンクによる Vault 外参照は拒否して exit 1
+- 同一ファイルの重複指定は自動除去
+- Raw を指定した場合も機密スキャン必須
+
+## 機密スキャン
+
+全選択ノートに対して `vault_secrets.detect_secrets()` を実行する。  
+機密が検出されたノートはスキップし、ファイル名とカテゴリのみ stderr に出力する。  
+機密値・断片は stdout/stderr/Reports のいずれにも出力しない。  
+残ったノートが 2 件未満なら exit 1 でレポートを生成しない。
 
 ## 制約
 
-- Vault 全体を再帰読みしない（AI_INDEX.md → 対象ノートのみ）
-- Raw を直接根拠に断定的記述をしない
 - Notion タスク状態・Git 正式仕様を書き換えない
-- レポートは `Reports/` に保存。正本（Projects/Decisions/SOP/Lessons）を上書きしない
+- 正本（Projects/Decisions/SOP/Lessons）を上書きしない
+- `--dry-run` では `Reports/` への出力を行わない
 
 ノート選択の詳細基準は `references/note-selection.md` を参照。

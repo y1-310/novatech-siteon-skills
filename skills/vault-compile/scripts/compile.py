@@ -4,57 +4,72 @@ vault-compile — Knowledge/Raw/ 未整理資料から整理提案を生成
 正本（Projects/Decisions/SOP/Lessons）は変更しない。
 """
 import argparse
+import os
 import re
 import sys
 from datetime import date
 from pathlib import Path
 
-SECRET_PATTERNS = re.compile(
-    r'(?i)(api[_-]?key\s*[:=]\s*\S+|token\s*[:=]\s*[A-Za-z0-9+/]{20,}|'
-    r'password\s*[:=]\s*\S+|bearer\s+[A-Za-z0-9\-._~+/]+=*|'
-    r'sk-[A-Za-z0-9]{20,}|eyJ[A-Za-z0-9_-]+\.eyJ)',
-    re.MULTILINE,
-)
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent.parent))
+from vault_secrets import detect_secrets
 
 PROTECTED_DIRS = {"Projects", "Decisions", "SOP", "Lessons"}
 
-# パターン: 概念・判断・手順・教訓のセクションヘッダー
-CONCEPT_HEADERS = re.compile(
-    r'^#{1,3}\s+(.{5,60})', re.MULTILINE
-)
+CONCEPT_HEADERS = re.compile(r'^#{1,3}\s+(.{5,60})', re.MULTILINE)
 DECISION_MARKERS = re.compile(
     r'(?i)(判断|決定|採用|却下|廃止|方針|ルール|決まった|確定)[：:]\s*(.{5,120})',
-    re.MULTILINE
+    re.MULTILINE,
 )
 LESSON_MARKERS = re.compile(
     r'(?i)(失敗|問題|再発防止|教訓|気づき|ミス|バグ|修正)[：:]\s*(.{5,120})',
-    re.MULTILINE
+    re.MULTILINE,
 )
 SOP_MARKERS = re.compile(
     r'(?i)(手順|ステップ|やり方|方法|フロー|プロセス)\s*[:：]?\s*(.{5,120})',
-    re.MULTILINE
+    re.MULTILINE,
 )
 
 
-def redact_secrets(text: str) -> tuple[str, list[str]]:
-    """機密パターンを検出。含む場合は警告リストを返し、本文は返さない。"""
-    warnings = []
-    for m in SECRET_PATTERNS.finditer(text):
-        snippet = m.group()[:20]
-        warnings.append(f"機密パターン検出（{snippet[:10]}…）")
-    return text, warnings
+def validate_file_arg(file_arg: str, vault: Path, raw_dir: Path) -> Path:
+    """--file を解決し Raw/ 配下であることを確認する。違反は stderr + exit(1)。"""
+    p = Path(file_arg)
+    candidate = p.resolve() if p.is_absolute() else (raw_dir / file_arg).resolve()
+
+    if any(protected in candidate.parts for protected in PROTECTED_DIRS):
+        print(f"ERROR: 正本ディレクトリは処理対象外です: {file_arg}", file=sys.stderr)
+        sys.exit(1)
+
+    try:
+        candidate.relative_to(raw_dir)
+    except ValueError:
+        print(f"ERROR: --file は Raw/ 配下のファイルを指定してください: {file_arg}", file=sys.stderr)
+        sys.exit(1)
+
+    if candidate.is_symlink():
+        real = Path(os.path.realpath(str(candidate)))
+        try:
+            real.relative_to(raw_dir)
+        except ValueError:
+            print(f"ERROR: シンボリックリンクによる Raw/ 外アクセスを拒否: {file_arg}", file=sys.stderr)
+            sys.exit(1)
+
+    if not candidate.is_file():
+        print(f"ERROR: ファイルが見つかりません: {file_arg}", file=sys.stderr)
+        sys.exit(1)
+
+    return candidate
 
 
 def extract_proposals(text: str, source_name: str, vault: Path) -> dict:
-    """テキストから概念・判断・手順・教訓の候補を抽出する。"""
     concepts = [m.group(1).strip() for m in CONCEPT_HEADERS.finditer(text)][:10]
     decisions = [(m.group(1), m.group(2).strip()) for m in DECISION_MARKERS.finditer(text)][:5]
     lessons = [(m.group(1), m.group(2).strip()) for m in LESSON_MARKERS.finditer(text)][:5]
     sops = [(m.group(1), m.group(2).strip()) for m in SOP_MARKERS.finditer(text)][:5]
 
-    # 既存ノートへのWikiリンク候補を探す
-    existing_notes = {p.stem for p in vault.rglob("*.md")
-                      if not any(x in str(p) for x in [".obsidian", "Raw", "Reports"])}
+    existing_notes = {
+        p.stem for p in vault.rglob("*.md")
+        if not any(x in str(p) for x in [".obsidian", "Raw", "Reports"])
+    }
 
     def wikilink_if_exists(term: str) -> str:
         for stem in existing_notes:
@@ -75,25 +90,24 @@ def extract_proposals(text: str, source_name: str, vault: Path) -> dict:
 def format_proposal(p: dict, today: date) -> str:
     fn = p["wikilink_fn"]
     lines = [
-        f"---",
-        f"type: compile-proposal",
+        "---",
+        "type: compile-proposal",
         f"source: Raw/{p['source']}",
         f"generated: {today}",
-        f"status: draft",
-        f"---",
-        f"",
+        "status: draft",
+        "---",
+        "",
         f"# 整理提案: {p['source']}",
-        f"",
-        f"> このファイルは提案です。正本（Decisions/SOP/Lessons/Projects）への反映は人間が判断してください。",
+        "",
+        "> このファイルは提案です。正本（Decisions/SOP/Lessons/Projects）への反映は人間が判断してください。",
         f"> 出典: [[Raw/{p['source']}]]",
-        f"",
+        "",
     ]
 
     if p["concepts"]:
         lines += ["## 概念候補", ""]
         for c in p["concepts"]:
-            linked = fn(c)
-            lines.append(f"- {linked}")
+            lines.append(f"- {fn(c)}")
         lines.append("")
 
     if p["decisions"]:
@@ -114,19 +128,16 @@ def format_proposal(p: dict, today: date) -> str:
             lines.append(f"- **{kind}**: {content}")
         lines.append("")
 
-    lines += [
-        "---",
-        "反映後はこのファイルを削除またはアーカイブしてください。",
-    ]
+    lines += ["---", "反映後はこのファイルを削除またはアーカイブしてください。"]
     return "\n".join(lines)
 
 
 def main():
     parser = argparse.ArgumentParser(description="vault-compile: Raw/ 資料から整理提案を生成")
-    parser.add_argument("--vault", default="/Users/satouyuuichi/Developer/Knowledge",
-                        help="Vault ルートディレクトリ")
-    parser.add_argument("--file", default=None,
-                        help="特定ファイルのみ処理（省略時は Raw/ 全件）")
+    parser.add_argument("--vault", default="/Users/satouyuuichi/Developer/Knowledge")
+    parser.add_argument("--file", default=None, help="特定ファイルのみ処理（省略時は Raw/ 全件）")
+    parser.add_argument("--dry-run", action="store_true",
+                        help="Reports/ への出力なし。提案を stdout に表示")
     args = parser.parse_args()
 
     vault = Path(args.vault).expanduser().resolve()
@@ -135,9 +146,8 @@ def main():
         print(f"ERROR: Raw/ ディレクトリが見つかりません: {raw_dir}", file=sys.stderr)
         sys.exit(1)
 
-    # 処理対象ファイル
     if args.file:
-        targets = [vault / args.file]
+        targets = [validate_file_arg(args.file, vault, raw_dir)]
     else:
         targets = list(raw_dir.glob("*.md"))
 
@@ -147,41 +157,37 @@ def main():
 
     today = date.today()
     proposals_dir = vault / "Reports" / "compile-proposals"
-    proposals_dir.mkdir(parents=True, exist_ok=True)
 
     processed = 0
     skipped = 0
     for target in targets:
         if not target.exists():
-            print(f"[compile] SKIP (not found): {target}", file=sys.stderr)
+            print(f"[compile] SKIP (not found): {target.name}", file=sys.stderr)
             skipped += 1
             continue
 
-        # 正本ディレクトリへの書き込みガード
-        for protected in PROTECTED_DIRS:
-            if protected in target.parts:
-                print(f"[compile] SKIP (protected): {target}", file=sys.stderr)
-                skipped += 1
-                continue
+        if any(protected in target.parts for protected in PROTECTED_DIRS):
+            print(f"[compile] SKIP (protected): {target.name}", file=sys.stderr)
+            skipped += 1
+            continue
 
         text = target.read_text(encoding="utf-8", errors="ignore")
-
-        # 機密チェック
-        _, warnings = redact_secrets(text)
-        if warnings:
-            for w in warnings:
-                print(f"[compile] WARN: {target.name}: {w}", file=sys.stderr)
-            print(f"[compile] SKIP (secret detected): {target.name}", file=sys.stderr)
+        cats = detect_secrets(text)
+        if cats:
+            print(f"[compile] SKIP (secret={','.join(cats)}): {target.name}", file=sys.stderr)
             skipped += 1
             continue
 
-        # 抽出・整形
         proposal = extract_proposals(text, target.name, vault)
         content = format_proposal(proposal, today)
 
-        out = proposals_dir / f"{today}-{target.stem}.md"
-        out.write_text(content, encoding="utf-8")
-        print(f"[compile] 提案出力: {out.relative_to(vault)}", file=sys.stderr)
+        if args.dry_run:
+            print(content)
+        else:
+            proposals_dir.mkdir(parents=True, exist_ok=True)
+            out = proposals_dir / f"{today}-{target.stem}.md"
+            out.write_text(content, encoding="utf-8")
+            print(f"[compile] 提案出力: {out.relative_to(vault)}", file=sys.stderr)
         processed += 1
 
     print(f"[compile] 完了: {processed}件処理, {skipped}件スキップ", file=sys.stderr)

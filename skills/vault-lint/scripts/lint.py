@@ -10,12 +10,9 @@ from datetime import date, datetime
 from pathlib import Path
 from typing import Dict, List
 
-SECRET_PATTERNS = re.compile(
-    r'(?i)(api[_-]?key\s*[:=]\s*\S+|token\s*[:=]\s*[A-Za-z0-9+/]{20,}|'
-    r'password\s*[:=]\s*\S+|bearer\s+[A-Za-z0-9\-._~+/]+=*|'
-    r'sk-[A-Za-z0-9]{20,}|eyJ[A-Za-z0-9_-]+\.eyJ)',
-    re.MULTILINE,
-)
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent.parent))
+from vault_secrets import detect_secrets
+
 TASK_PATTERNS = re.compile(
     r'(^- \[[ x]\]|担当\s*[:：]|期限\s*[:：]|完了日\s*[:：]|due\s*[:：])', re.MULTILINE
 )
@@ -23,8 +20,13 @@ WIKILINK_PATTERN = re.compile(r'\[\[([^\]|#]+?)(?:[|#][^\]]*)?\]\]')
 EVIDENCE_PATTERN = re.compile(
     r'(commit\s+[a-f0-9]{5,}|https?://|/[A-Za-z][\w/.-]+\.(md|js|py|json)|`[^`]+`)'
 )
+_LAST_UPDATED_RE = re.compile(
+    r'(?:最終更新|最終確認)\s*[：:]\s*(\d{4}-\d{2}-\d{2})',
+    re.MULTILINE,
+)
 
 PRIORITY = {"HIGH": 1, "MEDIUM": 2, "LOW": 3}
+_STRUCTURAL_STEMS = {"current", "index"}
 
 
 def find_all_notes(vault: Path) -> List[Path]:
@@ -36,9 +38,7 @@ def find_all_notes(vault: Path) -> List[Path]:
 
 
 def resolve_wikilink(target: str, vault: Path) -> bool:
-    """Return True if the wikilink target resolves to an existing file."""
     clean = target.strip().replace("\\", "/")
-    # Try exact match relative to vault
     candidates = [
         vault / (clean + ".md"),
         vault / clean,
@@ -87,41 +87,59 @@ def check_orphans(notes: List[Path], vault: Path) -> List[dict]:
     return issues
 
 
+def _note_title(path: Path) -> str:
+    try:
+        for line in path.read_text(encoding="utf-8", errors="ignore").splitlines():
+            if line.startswith("# "):
+                return line[2:].strip().lower()
+    except OSError:
+        pass
+    return ""
+
+
 def check_duplicates(notes: List[Path], vault: Path) -> List[dict]:
     from collections import defaultdict
-    by_stem = defaultdict(list)
+    by_stem: Dict[str, List[Path]] = defaultdict(list)
     for note in notes:
-        by_stem[note.stem.lower()].append(note)
+        stem = note.stem.lower()
+        if stem in _STRUCTURAL_STEMS:
+            continue  # current.md / index.md are per-project structural files
+        by_stem[stem].append(note)
+
     issues = []
     for stem, paths in by_stem.items():
-        if len(paths) > 1:
+        if len(paths) <= 1:
+            continue
+        titles = [_note_title(p) for p in paths]
+        non_empty = [t for t in titles if t]
+        if non_empty and len(set(non_empty)) < len(non_empty):
             files = ", ".join(str(p.relative_to(vault)) for p in paths)
             issues.append({
                 "id": "L3", "priority": "LOW",
                 "file": files,
-                "detail": f"重複候補: ファイル名が同一 ({stem})",
+                "detail": f"重複候補: ファイル名が同一で内容も類似 ({stem})",
             })
     return issues
 
 
+def _current_age_days(note: Path, text: str, today: date) -> int:
+    """最終更新/最終確認ラベルを優先。なければmtimeにフォールバック。"""
+    m = _LAST_UPDATED_RE.search(text)
+    if m:
+        try:
+            return (today - date.fromisoformat(m.group(1))).days
+        except ValueError:
+            pass
+    return (today - datetime.fromtimestamp(note.stat().st_mtime).date()).days
+
+
 def check_current_md(notes: List[Path], vault: Path, today: date) -> List[dict]:
     issues = []
-    current_notes = [n for n in notes if n.stem.lower() == "current"]
-    for note in current_notes:
+    for note in (n for n in notes if n.stem.lower() == "current"):
         text = note.read_text(encoding="utf-8", errors="ignore")
         rel = str(note.relative_to(vault))
 
-        # L4: 14日以上未確認
-        mtime = datetime.fromtimestamp(note.stat().st_mtime).date()
-        age = (today - mtime).days
-        # Also look for explicit date in text
-        date_match = re.search(r'(\d{4}-\d{2}-\d{2})', text)
-        if date_match:
-            try:
-                explicit_date = date.fromisoformat(date_match.group(1))
-                age = (today - explicit_date).days
-            except ValueError:
-                pass
+        age = _current_age_days(note, text, today)
         if age > 14:
             issues.append({
                 "id": "L4", "priority": "HIGH",
@@ -129,7 +147,6 @@ def check_current_md(notes: List[Path], vault: Path, today: date) -> List[dict]:
                 "detail": f"古い current.md: {age}日前が最終確認",
             })
 
-        # L5: 根拠なし
         if not EVIDENCE_PATTERN.search(text):
             issues.append({
                 "id": "L5", "priority": "MEDIUM",
@@ -137,13 +154,11 @@ def check_current_md(notes: List[Path], vault: Path, today: date) -> List[dict]:
                 "detail": "根拠なし current.md: commit/ファイル/URL の根拠記述がない",
             })
 
-        # L6: タスク混入
-        task_m = TASK_PATTERNS.search(text)
-        if task_m:
+        if TASK_PATTERNS.search(text):
             issues.append({
                 "id": "L6", "priority": "HIGH",
                 "file": rel,
-                "detail": f"タスク混入: current.md にタスク/担当/期限記述 ({task_m.group().strip()[:40]})",
+                "detail": "タスク混入: current.md にタスク/担当/期限記述を検出",
             })
     return issues
 
@@ -152,35 +167,32 @@ def check_secrets(notes: List[Path], vault: Path) -> List[dict]:
     issues = []
     for note in notes:
         text = note.read_text(encoding="utf-8", errors="ignore")
-        m = SECRET_PATTERNS.search(text)
-        if m:
-            snippet = m.group()[:30].replace("\n", " ")
+        categories = detect_secrets(text)
+        if categories:
             issues.append({
                 "id": "L8", "priority": "HIGH",
                 "file": str(note.relative_to(vault)),
-                "detail": f"機密らしき記述を検出（内容は出力しない）: パターン一致 [{snippet[:15]}…]",
+                "detail": f"機密らしき記述を検出: カテゴリ={','.join(categories)}",
             })
     return issues
 
 
 def check_contradictions(notes: List[Path], vault: Path) -> List[dict]:
-    """シンプルな矛盾チェック: 同一キーワードに対して異なる値が複数ノートに存在するか"""
-    issues = []
     col_pattern = re.compile(r'(\d+)列')
-    col_claims = {}
+    col_claims: Dict[int, List[str]] = {}
     for note in notes:
         text = note.read_text(encoding="utf-8", errors="ignore")
         for m in col_pattern.finditer(text):
             val = int(m.group(1))
             if 10 <= val <= 60:
-                rel = str(note.relative_to(vault))
-                col_claims.setdefault(val, []).append(rel)
-    all_files = {}
+                col_claims.setdefault(val, []).append(str(note.relative_to(vault)))
+    all_files: Dict[str, set] = {}
     for val, files in col_claims.items():
         for f in files:
             all_files.setdefault(f, set()).add(val)
+    issues = []
     for f, vals in all_files.items():
-        if len(vals) > 1 and not (33 in vals):  # 33列ルールは正常
+        if len(vals) > 1 and 33 not in vals:
             issues.append({
                 "id": "L7", "priority": "LOW",
                 "file": f,
@@ -193,15 +205,16 @@ def top3(issues: List[dict]) -> List[dict]:
     return sorted(issues, key=lambda x: PRIORITY.get(x["priority"], 9))[:3]
 
 
-def format_report(all_issues: List[dict], today: date, vault: Path, dry_run: bool) -> str:
+def format_report(all_issues: List[dict], today: date, vault: Path) -> str:
     top = top3(all_issues)
+    high = sum(1 for i in all_issues if i["priority"] == "HIGH")
+    med = sum(1 for i in all_issues if i["priority"] == "MEDIUM")
+    low = sum(1 for i in all_issues if i["priority"] == "LOW")
     lines = [
         f"# vault-lint レポート {today}",
         "",
         f"検査日: {today}  Vault: {vault}",
-        f"検出件数: {len(all_issues)}  (HIGH={sum(1 for i in all_issues if i['priority']=='HIGH')}  "
-        f"MEDIUM={sum(1 for i in all_issues if i['priority']=='MEDIUM')}  "
-        f"LOW={sum(1 for i in all_issues if i['priority']=='LOW')})",
+        f"検出件数: {len(all_issues)}  (HIGH={high}  MEDIUM={med}  LOW={low})",
         "",
         "## 要対応（優先度上位3件）",
         "",
@@ -212,18 +225,15 @@ def format_report(all_issues: List[dict], today: date, vault: Path, dry_run: boo
             lines.append(f"   {issue['detail']}")
             lines.append("")
     else:
-        lines.append("問題なし")
-        lines.append("")
+        lines += ["問題なし", ""]
 
-    for priority in ["HIGH", "MEDIUM", "LOW"]:
+    for priority in ("HIGH", "MEDIUM", "LOW"):
         grp = [x for x in all_issues if x["priority"] == priority]
         if not grp:
             continue
-        lines.append(f"## {priority} ({len(grp)}件)")
-        lines.append("")
+        lines += [f"## {priority} ({len(grp)}件)", ""]
         for issue in grp:
-            lines.append(f"- [{issue['id']}] `{issue['file']}`")
-            lines.append(f"  {issue['detail']}")
+            lines += [f"- [{issue['id']}] `{issue['file']}`", f"  {issue['detail']}"]
         lines.append("")
 
     lines += [
@@ -236,8 +246,7 @@ def format_report(all_issues: List[dict], today: date, vault: Path, dry_run: boo
 
 def main():
     parser = argparse.ArgumentParser(description="vault-lint: Knowledge Vault 品質検査")
-    parser.add_argument("--vault", default="/Users/satouyuuichi/Developer/Knowledge",
-                        help="Vault ルートディレクトリ")
+    parser.add_argument("--vault", default="/Users/satouyuuichi/Developer/Knowledge")
     parser.add_argument("--dry-run", action="store_true",
                         help="Reports/ への出力なし。結果を stdout に表示")
     args = parser.parse_args()
@@ -251,7 +260,7 @@ def main():
     notes = find_all_notes(vault)
     print(f"[lint] {len(notes)} ノートを検査中...", file=sys.stderr)
 
-    all_issues = []
+    all_issues: List[dict] = []
     all_issues += check_broken_links(notes, vault)
     all_issues += check_orphans(notes, vault)
     all_issues += check_duplicates(notes, vault)
@@ -259,7 +268,7 @@ def main():
     all_issues += check_secrets(notes, vault)
     all_issues += check_contradictions(notes, vault)
 
-    report = format_report(all_issues, today, vault, args.dry_run)
+    report = format_report(all_issues, today, vault)
 
     if args.dry_run:
         print(report)
