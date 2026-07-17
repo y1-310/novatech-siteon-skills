@@ -129,15 +129,26 @@ const testDevices = [
       });
 
       // 5. 画像読み込み完了待ち
-      await page.evaluate(() =>
-        Promise.all(
-          Array.from(document.images)
-            .filter(img => !img.complete)
-            .map(img => new Promise(resolve => {
-              img.onload = img.onerror = resolve;
-            }))
-        )
-      );
+      //    loading="lazy" の画面外画像は 4 のスクロール後も currentSrc が空のまま
+      //    fetch されず、onload/onerror がどちらも発火しない。旧実装はその Promise を
+      //    無条件に await していたため永久にハングし、撮影が 1 枚も出力されなかった
+      //    （forge 実測: スクロール後も 14 枚中 7〜11 枚が incomplete のまま 0 件解決）。
+      //    eager へ切り替えて実際に fetch させ、さらに上限を設けて取りこぼしても進める。
+      await page.evaluate(async () => {
+        document.querySelectorAll('img[loading="lazy"]').forEach((img) => {
+          img.loading = 'eager';
+        });
+        await Promise.race([
+          Promise.all(
+            Array.from(document.images)
+              .filter(img => !img.complete)
+              .map(img => new Promise(resolve => {
+                img.onload = img.onerror = resolve;
+              }))
+          ),
+          new Promise(resolve => setTimeout(resolve, 8000)),
+        ]);
+      });
 
       // 6. 最終安定待ち
       await page.waitForTimeout(800);
