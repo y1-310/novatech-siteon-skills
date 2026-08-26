@@ -18,8 +18,30 @@
 - [ ] .nojekyll がルートにあるか
 - [ ] assets/ が全て git tracked か
 - [ ] 全画像が HTTP 200 か
-- [ ] モバイル表示でレイアウトが崩れていないか
+
+## モバイル表示（目視チェックしない。必ずコマンドで判定する）
+
+```bash
+node tools/check-mobile.js <site-dir>
+```
+
+320 / 375 / 390 / 430px を Chromium で実描画し、以下を自動判定する。
+✅ 以外の状態で commit / deploy しないこと。
+
+- [ ] 横スクロールが出ていないか（`overflow-x: hidden` での握り潰しも検出する）
+- [ ] 中身が親の幅を超えていないか（日本語見出しの右端切れ）
+- [ ] タップ領域が 44x44px 以上か
+- [ ] 文字が 12px 以上か
+- [ ] 入力欄が 16px 以上か（iOS のオートズーム防止）
+- [ ] 下部固定CTAが最後の要素を隠していないか
+- [ ] アンカー先が固定ヘッダーに隠れないか
+- [ ] スクロールしても表示されない fade-in が残っていないか
+- [ ] 100vh に 100svh のフォールバックがあるか
+- [ ] IntersectionObserver の threshold が 0.01 か
+
+仕様は `mobile-safety` スキル / `_common/mobile-safety.md` を正本とする。
 
 ## テキスト
 - [ ] メインコピーの改行が意図通りか（PC表示で確認）
-- [ ] word-break: keep-all が日本語見出しに適用されているか
+- [ ] word-break: keep-all を使う場合、`body, body * { overflow-wrap: anywhere; }` を併用しているか
+      （keep-all 単独だと日本語が折り返せず右端が切れる）

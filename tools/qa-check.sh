@@ -24,7 +24,12 @@ run_check() {
     echo "🔍 ${name}"
     echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 
-    if python3 "${TOOLS_DIR}/${script}" "${TARGET}"; then
+    local runner="python3"
+    case "${script}" in
+        *.js) runner="node" ;;
+    esac
+
+    if "${runner}" "${TOOLS_DIR}/${script}" "${TARGET}"; then
         PASS=$((PASS + 1))
     else
         FAIL=$((FAIL + 1))
@@ -40,6 +45,7 @@ run_check "① 画像URL疎通確認（404チェック）" "check-images.py"
 run_check "② 人物写真Unsplash使用チェック" "check-persons.py"
 run_check "③ ナビゲーション日本語チェック" "check-nav.py"
 run_check "④ CSSレイアウトチェック（img寸法・align-items・max-height）" "check-layout.py"
+run_check "⑤ モバイル表示チェック（320/375/390/430px 実描画）" "check-mobile.js"
 
 echo ""
 echo "════════════════════════════════════════════════════════════"

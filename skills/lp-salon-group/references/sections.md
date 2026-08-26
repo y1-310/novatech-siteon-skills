@@ -5,6 +5,8 @@
 > placehold.co はローカル開発時のみ使用可。デモ提示用サイトでは実画像必須。
 >
 > **モバイルナビ実装**: ハンバーガーメニューの HTML/CSS/JS は `_common/mobile-nav.md` を参照すること。
+> **モバイル表示崩れ防止**: `<style>` 末尾に `_common/mobile-safety.md` の必須CSSブロックを必ず貼り、
+> `node tools/check-mobile.js <site>` が ✅ になるまで直すこと。❌のまま commit / deploy しない。
 
 
 ## グループトップ（index.html）

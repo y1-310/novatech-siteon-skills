@@ -32,6 +32,7 @@ Claude Codeからの指示に従い、大量のテキスト・コード・デー
 - image-selection — 画像選定・配置ルール（写真4役割・5配置パターン・業態別トーン等）
 - components — 共通演出要素・予約ボタン5箇所配置・CLS対策・2カラムルール等
 - mobile-nav — ハンバーガーメニュー実装仕様（iPhone実機対応・aria・Safari iOS対策）
+- mobile-safety — モバイル表示崩れ防止仕様（日本語折り返し・アンカーオフセット・タップ領域44px・iOSオートズーム・IntersectionObserver）
 - seo-base — SEO基本仕様（title/OGP/JSON-LD/NAP一貫性・アクセシビリティ10項目）
 
 タスク依頼を受けたら、該当する業態スキルと共通スキルを必ず先に読み込んで作業開始すること。
