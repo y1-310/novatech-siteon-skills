@@ -1,5 +1,14 @@
 /**
- * mobile-preview.js v1.2 — 全アスペクト比フルページスクショ + 横オーバーフロー監査
+ * mobile-preview.js v1.3 — 全アスペクト比スクショ + 横オーバーフロー監査 + 展開状態監査
+ *
+ * v1.3 改修点 (2026-09-07):
+ *   - メニュー展開状態の監査を追加（rules.md 50〜53）。横オーバーフロー検査では
+ *     原理的に検出できない不具合を、モバイル幅で自動判定する:
+ *       50: オーバーレイパネルの背景が完全不透明か（rgba の alpha < 1 を検出）
+ *       51: パネル上端が固定ヘッダー下端に接しているか（ズレ > 1px を検出）
+ *       52: ヘッダー内テキストの行頭に長音符・句読点・閉じ括弧が孤立していないか
+ *       53: [id] の scroll-margin-top が 0 にフォールバックしていないか
+ *   - 上記いずれかの違反で終了コード 1
  *
  * v1.2 改修点 (2026-09-07):
  *   - 検証ビューポートを 10 種に拡張（最小スマホ〜PC帯 + アスペクト比異常系 1280x600）
@@ -135,9 +144,149 @@ const AUDIT = function () {
   };
 };
 
+
+/**
+ * メニュー展開状態の監査（rules.md 50〜53）。モバイル幅でのみ実行する。
+ * ハンバーガーを開き、パネルの不透明度・位置・行頭禁則・アンカーオフセットを判定する。
+ */
+const MENU_AUDIT = function () {
+  const out = { applicable: false, violations: [], detail: {} };
+
+  const toggle = document.querySelector(
+    '[data-menu-toggle], .menu-toggle, [aria-controls][aria-expanded], button[class*="hamburger"], button[class*="menu"]'
+  );
+  if (!toggle || getComputedStyle(toggle).display === 'none') return out;
+
+  const controls = toggle.getAttribute('aria-controls');
+  let panel = controls ? document.getElementById(controls) : null;
+  if (panel) {
+    // aria-controls が中身(nav)を指し、実際に背景を持つのはその親パネルのことがある
+    let el = panel;
+    while (el && el !== document.body) {
+      const pos = getComputedStyle(el).position;
+      if (pos === 'fixed' || pos === 'absolute') { panel = el; break; }
+      el = el.parentElement;
+    }
+  }
+  if (!panel) panel = document.querySelector('.nav-wrap, [class*="nav-panel"], [class*="drawer"]');
+  if (!panel) return out;
+
+  out.applicable = true;
+  const header = document.querySelector('header, .header, [class*="header"]');
+  const pcs = getComputedStyle(panel);
+
+  // 50: 背景が完全不透明か
+  const bg = pcs.backgroundColor;
+  const m = bg.match(/rgba?\(([^)]+)\)/);
+  const alpha = m ? (m[1].split(',')[3] !== undefined ? parseFloat(m[1].split(',')[3]) : 1) : 1;
+  out.detail.panelBackground = bg;
+  if (alpha < 1) {
+    out.violations.push({
+      rule: 50, severity: '高',
+      message: `オーバーレイパネルの背景が半透明（alpha=${alpha}）。背面が透けて可読性が落ちる`,
+      selector: panel.className || panel.tagName.toLowerCase(),
+    });
+  }
+
+  // 51: パネル上端が固定ヘッダー下端に接しているか
+  if (header) {
+    const hb = header.getBoundingClientRect();
+    const nb = panel.getBoundingClientRect();
+    const gap = Math.round(nb.top - hb.bottom);
+    out.detail.headerBottom = Math.round(hb.bottom);
+    out.detail.panelTop = Math.round(nb.top);
+    out.detail.gap = gap;
+    if (Math.abs(gap) > 1) {
+      out.violations.push({
+        rule: 51, severity: gap < 0 ? '高' : '中',
+        message: gap < 0
+          ? `パネルがヘッダーの裏に ${Math.abs(gap)}px 潜っている（ヘッダー実高と固定px参照のズレ）`
+          : `パネルとヘッダーの間に ${gap}px の隙間があり背面が見える`,
+        selector: panel.className || panel.tagName.toLowerCase(),
+      });
+    }
+  }
+
+  // 52: ヘッダー内テキストの行頭禁則（長音符・句読点・閉じ括弧の孤立）
+  const FORBIDDEN = 'ーぁぃぅぇぉっゃゅょァィゥェォッャュョ、。，．）］｝」』〉》〕！？';
+  const lineStarts = [];
+  const targets = header ? header.querySelectorAll('p, span, h1, h2, a') : [];
+  for (const el of targets) {
+    const tn = el.firstChild;
+    if (!tn || tn.nodeType !== 3 || tn.length < 2) continue;
+    const rg = document.createRange();
+    let prevTop = null;
+    for (let i = 0; i < tn.length; i++) {
+      rg.setStart(tn, i); rg.setEnd(tn, i + 1);
+      const t = Math.round(rg.getBoundingClientRect().top);
+      if (prevTop !== null && t !== prevTop) {
+        const ch = tn.data[i];
+        lineStarts.push(ch);
+        if (FORBIDDEN.includes(ch)) {
+          out.violations.push({
+            rule: 52, severity: '中',
+            message: `行頭に「${ch}」が孤立している（word-break: keep-all が overflow-wrap: anywhere に上書きされている可能性）`,
+            selector: (el.className || el.tagName.toLowerCase()) + ' : ' + tn.data.trim().slice(0, 24),
+          });
+        }
+      }
+      prevTop = t;
+    }
+  }
+  out.detail.lineStartChars = lineStarts;
+
+  // 53: アンカーの scroll-margin-top が 0 にフォールバックしていないか
+  if (header && getComputedStyle(header).position === 'fixed') {
+    const ids = [...document.querySelectorAll('section[id], main [id]')].slice(0, 12);
+    const zero = ids.filter((el) => parseFloat(getComputedStyle(el).scrollMarginTop) === 0);
+    const headerH = Math.round(header.getBoundingClientRect().height);
+    out.detail.headerHeight = headerH;
+    out.detail.anchorsWithZeroMargin = zero.length + '/' + ids.length;
+    if (ids.length && zero.length === ids.length) {
+      out.violations.push({
+        rule: 53, severity: '高',
+        message: `固定ヘッダー(${headerH}px)があるのに [id] の scroll-margin-top が全て 0。アンカーの着地点がヘッダーの裏に隠れる`,
+        selector: zero.slice(0, 3).map((e) => '#' + e.id).join(', '),
+      });
+    } else {
+      const tooSmall = ids.filter((el) => {
+        const v = parseFloat(getComputedStyle(el).scrollMarginTop);
+        return v > 0 && v < headerH;
+      });
+      if (tooSmall.length) {
+        out.violations.push({
+          rule: 53, severity: '中',
+          message: `scroll-margin-top がヘッダー実高(${headerH}px)より小さく、見出しが一部隠れる`,
+          selector: tooSmall.slice(0, 3).map((e) => '#' + e.id).join(', '),
+        });
+      }
+    }
+  }
+
+  return out;
+};
+
+/** ハンバーガーを開く。トランジション完了は呼び出し側で待つ。 */
+const OPEN_MENU = function () {
+  const toggle = document.querySelector(
+    '[data-menu-toggle], .menu-toggle, [aria-controls][aria-expanded], button[class*="hamburger"], button[class*="menu"]'
+  );
+  if (!toggle || getComputedStyle(toggle).display === 'none') return false;
+  toggle.click();
+  return true;
+};
+
+/** ハンバーガーを閉じる（スクショに影響させない）。 */
+const CLOSE_MENU = function () {
+  const toggle = document.querySelector(
+    '[data-menu-toggle], .menu-toggle, [aria-controls][aria-expanded], button[class*="hamburger"], button[class*="menu"]'
+  );
+  if (toggle) toggle.click();
+};
+
 (async () => {
   const browser = await chromium.launch();
-  console.log(`📐 mobile-preview v1.2 — ${auditOnly ? '監査のみ' : '撮影 + 監査'}`);
+  console.log(`📐 mobile-preview v1.3 — ${auditOnly ? '監査のみ' : '撮影 + 監査'}`);
   console.log(`🎯 対象: ${targetUrl}`);
   console.log(`📁 保存先: ${outputDirArg}\n`);
 
@@ -212,7 +361,19 @@ const AUDIT = function () {
 
       // 横オーバーフロー監査（全ビューポート必須）
       const audit = await page.evaluate(AUDIT);
-      results.push({ viewport: v.name, note: v.note, ...audit });
+
+      // メニュー展開状態の監査（rules.md 50〜53）。ハンバーガーが出るモバイル幅のみ。
+      let menu = { applicable: false, violations: [] };
+      if (v.width < 768) {
+        const opened = await page.evaluate(OPEN_MENU);
+        if (opened) {
+          await page.waitForTimeout(600); // transition 完了待ち
+          menu = await page.evaluate(MENU_AUDIT);
+          await page.evaluate(CLOSE_MENU);
+          await page.waitForTimeout(400);
+        }
+      }
+      results.push({ viewport: v.name, note: v.note, ...audit, menu });
 
       let shotPath = null;
       if (!auditOnly) {
@@ -232,6 +393,14 @@ const AUDIT = function () {
         audit.offenders.slice(0, 5).forEach((o) => {
           console.log(`      └ +${o.overflowPx}px  ${o.selector}  (w=${o.width}, right=${o.right})`);
         });
+      }
+      if (menu.violations && menu.violations.length) {
+        menu.violations.forEach((x) => {
+          console.log(`   ❌ [メニュー展開/ルール${x.rule}/${x.severity}] ${x.message}`);
+          console.log(`      └ ${x.selector}`);
+        });
+      } else if (menu.applicable) {
+        console.log(`   ✅ メニュー展開状態 OK (背景 ${menu.detail.panelBackground} / ヘッダーとの差 ${menu.detail.gap}px)`);
       }
       successCount++;
     } catch (err) {
@@ -277,6 +446,7 @@ const AUDIT = function () {
     );
   }
   const bad = results.filter((r) => !r.error && !r.ok);
+  const menuBad = results.filter((r) => r.menu && r.menu.violations && r.menu.violations.length);
   if (bad.length) {
     lines.push('');
     lines.push('## はみ出し原因要素');
@@ -295,12 +465,36 @@ const AUDIT = function () {
     lines.push('');
     lines.push('全ビューポートで横オーバーフローなし。');
   }
+  lines.push('');
+  lines.push('## メニュー展開状態の検査（rules.md 50〜53）');
+  lines.push('');
+  const menuChecked = results.filter((r) => r.menu && r.menu.applicable);
+  if (!menuChecked.length) {
+    lines.push('ハンバーガーメニューを検出できませんでした（該当なし）。');
+  } else if (!menuBad.length) {
+    lines.push('| ビューポート | パネル背景 | ヘッダーとの差 | アンカー | 判定 |');
+    lines.push('|---|---|---|---|---|');
+    for (const r of menuChecked) {
+      const d = r.menu.detail;
+      lines.push(`| ${r.viewport} | ${d.panelBackground} | ${d.gap}px | ${d.anchorsWithZeroMargin || '-'} | ✅ |`);
+    }
+  } else {
+    lines.push('| ビューポート | ルール | 重要度 | 指摘 | 該当 |');
+    lines.push('|---|---|---|---|---|');
+    for (const r of menuBad) {
+      for (const x of r.menu.violations) {
+        lines.push(`| ${r.viewport} | ${x.rule} | ${x.severity} | ${x.message} | \`${x.selector}\` |`);
+      }
+    }
+  }
+
   const mdPath = path.join(outputDirArg, 'responsive-audit.md');
   fs.writeFileSync(mdPath, lines.join('\n') + '\n', 'utf-8');
 
   console.log(`\n📄 レポート: ${mdPath}`);
   console.log(`📄 JSON:     ${jsonPath}`);
-  console.log(`\n🎉 完了: 成功 ${successCount} / 失敗 ${failCount} / 横はみ出し ${bad.length} ビューポート`);
+  const menuViolationCount = menuBad.reduce((n, r) => n + r.menu.violations.length, 0);
+  console.log(`\n🎉 完了: 成功 ${successCount} / 失敗 ${failCount} / 横はみ出し ${bad.length} ビューポート / メニュー展開の指摘 ${menuViolationCount} 件`);
 
   if (process.platform === 'darwin' && shouldOpen) {
     exec(`open "${outputDirArg}"`, (err) => {
@@ -309,5 +503,5 @@ const AUDIT = function () {
     });
   }
 
-  if (failCount > 0 || bad.length > 0) process.exit(1);
+  if (failCount > 0 || bad.length > 0 || menuBad.length > 0) process.exit(1);
 })();
