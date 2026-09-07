@@ -14,6 +14,9 @@
 |---|------|------|------|
 | 1 | 横スクロールが出る | 固定幅・はみ出し要素 | 幅指定を `min()` / `max-width:100%` に |
 | 2 | 日本語見出しが右で切れる | `word-break: keep-all` 単独 | `overflow-wrap: anywhere` を必ず併用 |
+| 2b | 長音符「ー」が行頭に孤立 | `body * { overflow-wrap: anywhere }` が `keep-all` を上書き | keep-all を当てた要素に `overflow-wrap: normal` を併記（rules.md 52） |
+| 2c | ナビパネル越しに背面が透ける | `rgba(..., 0.98)` の「ほぼ不透明」 | パネル背景を完全不透明にする（rules.md 50） |
+| 2d | ナビパネルがヘッダーの裏に潜る | `top: var(--header-h)` の固定px参照 | `position: absolute; inset: 100% 0 auto 0;` でヘッダー実高に追従（rules.md 51） |
 | 3 | はみ出しが `overflow-x:hidden` で隠れている | ルートで握り潰し | 原因側を直す。ルートの hidden は対症療法 |
 | 4 | タップしづらい | タップ領域 44px 未満 | `.tap-safe` で当たり判定を拡張 |
 | 5 | 文字が読めない | 12px 未満 | スマホ幅で 12px 下限 |
@@ -40,7 +43,13 @@
 :root {
   /* サイト側が同名の変数を使っていることがあるため --mb- 接頭辞を必ず付ける。
      接頭辞なしで :root に足すと、サイトのヘッダー高やナビ位置を壊す。 */
-  --mb-header-h: 64px;          /* ← スマホ幅でのヘッダー実高に差し替える */
+  --mb-header-h: 64px;          /* ← スマホ幅でのヘッダー実高に差し替える。
+                                     必ずこのファイル内で定義すること。未定義だと下の
+                                     calc() が無効値になり scroll-margin-top: 0 に
+                                     フォールバックし、アンカーの着地点が固定ヘッダーの
+                                     裏に完全に隠れる（rules.md 53）。
+                                     値はヘッダー内テキストが折り返した後の実高より
+                                     大きく取る（rules.md 51） */
   --mb-tap-min: 44px;
 }
 
@@ -53,6 +62,17 @@
 body,
 body * {
   overflow-wrap: anywhere;
+}
+
+/* 1b. keep-all を当てた要素の打ち消し（2026-09-07 追加 / rules.md 52）
+   上の anywhere は body * に効くため、個別に word-break: keep-all を当てた要素でも
+   語中改行が復活する。keep-all を使う要素には overflow-wrap: normal を必ず併記する。
+   （bloom 実機検証: ヘッダーの店舗説明が「トータルビューティ／ー」と切れ、
+     長音符が行頭に孤立した） */
+.brand-meta,
+[class*="tagline"],
+[class*="brand-meta"] {
+  overflow-wrap: normal;
 }
 
 /* 2. アンカーの着地点を固定ヘッダーの下に出す */
