@@ -1,4 +1,4 @@
-# mobile-preview skill v1.1
+# mobile-preview skill v1.2
 
 ## 1. 目的
 
@@ -7,6 +7,17 @@
 
 Playwright を使用して実際の CSS/JS 描画済み状態を画像化するため、
 Lighthouse の desktop エミュレーションより精度が高い。
+
+## v1.2 変更点（2026-09-07 全アスペクト比レスポンシブ堅牢化）
+
+| 項目 | v1.1 | v1.2 |
+|------|------|------|
+| 検証ビューポート | 6デバイス（機種名ベース） | **10ビューポート（幅×高さベース）** — 最小スマホ〜PC帯 + アスペクト比異常系 |
+| 横オーバーフロー判定 | なし | **全ビューポートで `documentElement.scrollWidth <= window.innerWidth` を判定し数値を記録** |
+| はみ出し原因の特定 | なし | **該当要素のセレクタ・幅・right座標をレポートに出力** |
+| レポート出力 | なし | `responsive-audit.md` / `responsive-audit.json` |
+| 監査のみ実行 | なし | `--audit-only`（スクショを省略して高速検査） |
+| 終了コード | 撮影失敗時のみ 1 | 撮影失敗 **または横はみ出し検出時** に 1 |
 
 ## v1.1 変更点
 
@@ -52,16 +63,60 @@ node .claude/skills/mobile-preview/scripts/mobile-preview.js \
   ~/Developer/novatech-siteon-client-bloom/previews
 ```
 
-## 3. 対応デバイス一覧（v1.1 刷新）
+## 3. 検証ビューポート一覧（v1.2）
 
-| デバイス名 | 解像度 | 用途 |
+### 幅ベース（高さは標準比率）
+
+| ビューポート | DPR | 用途 |
 |---|---|---|
-| iPhone-17-Pro | 402×874 (deviceScaleFactor: 3) | iOS Safari 2024-2025 主流機種 |
-| iPhone-SE | 375×667 (deviceScaleFactor: 2) | iOS Safari 最小基準 |
-| iPad-Air-13 | 1024×1366 (deviceScaleFactor: 2) | タブレット確認（大画面） |
-| Galaxy-S24 | 384×857 (deviceScaleFactor: 3) | Android Chrome 2024 基準 |
-| Desktop-1280 | 1280×800 | デスクトップ標準 |
-| Desktop-1920 | 1920×1080 | デスクトップ Wide |
+| 320x568 | 2 | 最小スマホ |
+| 375x667 | 2 | 現行スマホ帯（iPhone SE） |
+| 390x844 | 3 | 現行スマホ帯 |
+| 430x932 | 3 | 現行スマホ帯（Pro Max） |
+| 768x1024 | 2 | タブレット縦 |
+| 1024x768 | 2 | タブレット横 |
+| 1280x800 | 1 | PC帯 |
+| 1536x960 | 1 | PC帯 |
+| 1920x1080 | 1 | PC帯 |
+
+### アスペクト比異常系
+
+| ビューポート | DPR | 用途 |
+|---|---|---|
+| 1280x600 | 1 | 低い横長。ノートPC + ブラウザUI圧迫を想定。hero と fixed 要素の崩れ検出用 |
+
+## 3b. 横オーバーフロー検査（全ビューポート必須）
+
+判定基準:
+
+```js
+document.documentElement.scrollWidth <= window.innerWidth
+```
+
+- 全ビューポートで `scrollWidth` / `innerWidth` / `clientWidth` の**数値を記録**する
+- はみ出し検出時は、`html` / `body` の `overflow-x: hidden` を一時的に外して実際の溢れ幅を測り、
+  **原因要素のセレクタ・幅・right座標**を特定してレポートに含める
+  （clip祖先を持つ要素は除外し、溢れ幅の大きい順に上位15件）
+- 対応する品質ルール: `.claude/rules.md` カテゴリ4 の 37 / 38 / 39 / 42 / 43 / 46 / 49
+
+出力レポート:
+
+| ファイル | 内容 |
+|---|---|
+| `responsive-audit.md` | 全ビューポートの数値表 + はみ出し原因要素の表 |
+| `responsive-audit.json` | 同内容の機械可読版（CI・差分比較用） |
+
+横はみ出しを1つでも検出すると **終了コード 1** を返す。
+
+### 監査のみ実行（高速）
+
+```bash
+node .claude/skills/mobile-preview/scripts/mobile-preview.js <対象> <出力先> --audit-only
+```
+
+> 実装は Playwright（Chromium）。指示書上の「Puppeteer検査」は同等の実描画検査を指す。
+> 既存の `tools/check-mobile.js`（4幅・崩れ12項目）とは役割分担 —
+> check-mobile.js は commit ゲート、本スキルは全アスペクト比の網羅確認。
 
 ## 4. 前提条件
 
@@ -82,7 +137,8 @@ npx playwright install chromium
 | 本番確認・Yuichi 実機代替 | 対象プロジェクトの `./previews/` |
 | Git 管理 | `previews/` は `.gitignore` に追記して除外 |
 
-出力ファイル名: `preview-{デバイス名}.png`
+出力ファイル名: `preview-{幅x高さ}.png`（例: `preview-390x844.png`）
+レポート: `responsive-audit.md` / `responsive-audit.json`
 
 ## 6. トラブルシューティング
 
@@ -136,6 +192,6 @@ FFmpegが未インストールの場合は WebM 形式で保存される。
 
 ## 参謀Claude からのメモ
 
-- 新規案件でデモを作ったら必ずこのスキルで6デバイス撮影してから Yuichi に報告すること
+- 新規案件でデモを作ったら必ずこのスキルで10ビューポート撮影 + 横オーバーフロー監査をしてから Yuichi に報告すること
 - Puppeteer（既存の capture.mjs）と役割分担: capture.mjs はビフォーアフター比較用、本スキルは多デバイス網羅確認用
 - iOS Safari 固有の崩れは Chrome エミュレーションでは検知できない。実機確認の代替ではなくあくまで参考として使うこと

@@ -1,0 +1,108 @@
+{
+  "target": "file:///Users/satouyuuichi/Developer/novatech-siteon-client-bloom/index.html",
+  "generatedAt": "2026-09-07T03:29:31.983Z",
+  "tool": "mobile-preview v1.2",
+  "criterion": "document.documentElement.scrollWidth <= window.innerWidth",
+  "results": [
+    {
+      "viewport": "320x568",
+      "note": "最小スマホ",
+      "innerWidth": 320,
+      "clientWidth": 320,
+      "scrollWidth": 320,
+      "ok": true,
+      "maskedByOverflowHidden": false,
+      "offenders": []
+    },
+    {
+      "viewport": "375x667",
+      "note": "現行スマホ帯 (iPhone SE)",
+      "innerWidth": 375,
+      "clientWidth": 375,
+      "scrollWidth": 375,
+      "ok": true,
+      "maskedByOverflowHidden": false,
+      "offenders": []
+    },
+    {
+      "viewport": "390x844",
+      "note": "現行スマホ帯",
+      "innerWidth": 390,
+      "clientWidth": 390,
+      "scrollWidth": 390,
+      "ok": true,
+      "maskedByOverflowHidden": false,
+      "offenders": []
+    },
+    {
+      "viewport": "430x932",
+      "note": "現行スマホ帯 (Pro Max)",
+      "innerWidth": 430,
+      "clientWidth": 430,
+      "scrollWidth": 430,
+      "ok": true,
+      "maskedByOverflowHidden": false,
+      "offenders": []
+    },
+    {
+      "viewport": "768x1024",
+      "note": "タブレット縦",
+      "innerWidth": 768,
+      "clientWidth": 768,
+      "scrollWidth": 768,
+      "ok": true,
+      "maskedByOverflowHidden": false,
+      "offenders": []
+    },
+    {
+      "viewport": "1024x768",
+      "note": "タブレット横",
+      "innerWidth": 1024,
+      "clientWidth": 1024,
+      "scrollWidth": 1024,
+      "ok": true,
+      "maskedByOverflowHidden": false,
+      "offenders": []
+    },
+    {
+      "viewport": "1280x800",
+      "note": "PC帯",
+      "innerWidth": 1280,
+      "clientWidth": 1280,
+      "scrollWidth": 1280,
+      "ok": true,
+      "maskedByOverflowHidden": false,
+      "offenders": []
+    },
+    {
+      "viewport": "1536x960",
+      "note": "PC帯",
+      "innerWidth": 1536,
+      "clientWidth": 1536,
+      "scrollWidth": 1536,
+      "ok": true,
+      "maskedByOverflowHidden": false,
+      "offenders": []
+    },
+    {
+      "viewport": "1920x1080",
+      "note": "PC帯",
+      "innerWidth": 1920,
+      "clientWidth": 1920,
+      "scrollWidth": 1920,
+      "ok": true,
+      "maskedByOverflowHidden": false,
+      "offenders": []
+    },
+    {
+      "viewport": "1280x600",
+      "note": "アスペクト比異常系（低い横長・hero/fixed崩れ検出用）",
+      "innerWidth": 1280,
+      "clientWidth": 1280,
+      "scrollWidth": 1280,
+      "ok": true,
+      "maskedByOverflowHidden": false,
+      "offenders": []
+    }
+  ]
+}

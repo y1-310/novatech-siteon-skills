@@ -1,12 +1,25 @@
 # 品質ルール（8カテゴリ・45項目）
 
-## 1. Codex連携（5項目）
+## 1. Claude Code記述 / Codex監査（5項目・2026-09-07 役割反転）
 
-1. コード・コンテンツの記述は全てCodexに委任する
-2. Codexへの指示には該当する全ルールを含める
-3. Codexの出力は必ずルール準拠を確認してから採用する
-4. 1セクション単位で指示を出す（一括で全体を頼まない）
-5. 判断が必要な場面ではCodexに判断させず、Claude Codeが決定する
+1. HTML/CSS/JS の記述は Claude Code（CEOブース・制作ブース）が行う。Codex への記述委託は行わない
+2. Codex の役割は「監査専任」。コードの記述・修正は行わない。指摘のみを返す
+3. Codex監査は次の3点を対象とする — (a) rules.md 全カテゴリ準拠 / (b) レスポンシブ規則（カテゴリ4の全アスペクト比ルール含む） / (c) アクセシビリティ・SEO基本項目
+4. 監査タイミングは「サイト完成単位」（Yuichi決定 2026-09-07）。commit 毎の監査は行わず、1サイトの制作完了時点で1回実施する
+5. 監査で指摘された修正は Claude Code が実施する。再監査は重要度「高」の指摘があった場合のみ行う
+
+### Codex監査レポート形式（固定）
+
+| 指摘項目 | 該当ファイル・行 | 違反ルール番号 | 重要度 |
+|---|---|---|---|
+| （指摘の要約） | `index.html:120` | 37 | 高 |
+
+重要度の基準 — **高**: 表示崩れ・機能不全・アクセシビリティ阻害 / **中**: ルール違反だが実害限定 / **低**: 表記ゆれ・改善提案
+
+### 変更しないもの
+
+- 画像生成の Codex 担当（cx-image / 制作ブース2）は従来どおり Codex が行う。今回の反転はコード記述のみ
+- Kimi の担当（日本語コピー・リサーチ）は変更しない
 
 ## 2. ファイル構成（4項目）
 
@@ -27,7 +40,7 @@
 16. フォームのlabelとinputを紐付ける
 17. noscript対応を実装する（フェードイン→常時表示 / ナビ→フル表示 / マーキー→静止 / タブ→全展開）
 
-## 4. CSS品質（13項目）
+## 4. CSS品質（31項目・2026-09-07 全アスペクト比レスポンシブ10項目を追加）
 
 18. CSS変数を統一使用する（--bg / --bg-alt / --bg-dark / --text / --text-mid / --text-light / --accent / --line / --r）
 19. CSS変数の値をハードコードしない
@@ -51,12 +64,32 @@
 38. **`display: grid` を持つセクションラッパーには `grid-template-columns` を必ず明示する**。省略すると暗黙の auto トラックがアイテムの max-content 幅で確定し、コンテンツが画面幅を超えてもクリップされない。`display: grid;` と書いたら必ず次行に `grid-template-columns: minmax(0, 1fr);` を書く。
 39. **flex コンテナ内に `display: grid` を持つ要素は `min-width: 0` を追加する**。flex アイテムのデフォルト `min-width: auto` はアイテムの min-content で決まるため、内部の grid が想定より広い幅を要求するとコンテナが押し広げられる。
 
+### 全アスペクト比レスポンシブ（40〜49 / 2026-09-07 追加）
+
+40. **`box-sizing: border-box` を `*, *::before, *::after` に必ず適用する**。padding/border を含めた幅計算にしないと、幅指定要素が親をはみ出す。
+41. **`100vh` の単独使用禁止**。`height: 100vh;` の直後に `height: 100dvh;` を併記してfallbackとする。iOS Safari のアドレスバー分だけ実表示領域がずれ、ヒーローが画面外に押し出される。
+42. **`100vw` 使用禁止**。`100vw` はスクロールバー幅を含むため、縦スクロールのあるページで必ず横にはみ出す。`width: 100%` を使う。
+43. **コンテナに固定px幅を指定しない**。`max-width: 1200px; width: 100%;` の組み合わせのみ許可する。`width: 1200px` は狭いビューポートで即オーバーフローする。
+44. **`img` / `video` には `max-width: 100%; height: auto;` を必ず設定する**。加えてCLS防止のため `aspect-ratio` またはHTMLの `width` / `height` 属性を明示する（35と併せて運用）。
+45. **見出し・大きめフォントと主要余白は `clamp()` で流体化する**。例: `font-size: clamp(1.75rem, 4.5vw, 3rem);` / `padding: clamp(48px, 8vw, 120px) 0;`。ブレークポイントごとの固定値切り替えだけでは中間幅で破綻する。
+46. **grid のトラック定義は `minmax(0, 1fr)` を必須とする**（37の再確認）。`1fr` は `minmax(auto, 1fr)` の略であり、min-content がコンテナ幅を超えるとトラックが膨張する。
+47. **日本語長文見出しには `overflow-wrap: break-word` を必須とする**。改行位置の指定は既存の文節ルール（`word-break: keep-all` + 31）に従い、破綻時の逃げ道として break-word を併用する。
+48. **`position: fixed` / `sticky` 要素は `env(safe-area-inset-*)` に対応する**。例: `padding-bottom: calc(16px + env(safe-area-inset-bottom));`。iPhone のホームインジケータ・ノッチに固定CTAやヘッダーが重なる。
+49. **table・コードブロック等の横長要素は、その親に `overflow-x: auto` を付与する**。`body` 側の `overflow-x: hidden`（36）に依存して隠すのは禁止。隠すのではなく、その要素の中でスクロールさせる。
+
 ### オートレイアウト崩れ検査チェックリスト（生成後・デプロイ前）
 
 - [ ] モバイル375px での `body.scrollWidth` が 375 以下か（Puppeteer または DevTools で確認）
 - [ ] `display: grid` のある全要素に `grid-template-columns` が明示されているか
 - [ ] モバイルブレークポイント内の `1fr` が `minmax(0, 1fr)` になっているか
 - [ ] flex コンテナ内の grid 要素に `min-width: 0` があるか
+- [ ] `100vh` に `100dvh` のfallbackが併記されているか（41）
+- [ ] `100vw` を使っていないか（42）
+- [ ] コンテナが `max-width` + `width: 100%` になっているか（43）
+- [ ] 見出し・主要余白が `clamp()` で流体化されているか（45）
+- [ ] `position: fixed/sticky` に `env(safe-area-inset-*)` 対応があるか（48）
+- [ ] 横長要素の親に `overflow-x: auto` があるか（49）
+- [ ] 全ビューポートで `documentElement.scrollWidth <= innerWidth` か（mobile-preview v1.2 の `--audit` で判定）
 
 ## 5. アクセシビリティ（8項目）
 
