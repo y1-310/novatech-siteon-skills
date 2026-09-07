@@ -1,28 +1,40 @@
-# 制作・品質部 指示書 v2.0
+# 制作・品質部 指示書 v3.0
 
 > 作成: 2026-04-20 / v2.0更新: 2026-05-12（Codex自動呼び出し検証完了・Phase 3前倒し達成）
+> v3.0更新: 2026-09-07（**役割反転** — コード記述は Claude Code、Codex は監査専任）
 
 ---
 
 ## 1. 役割
 
-NovaTech / SITEON のコード生成・テキスト出力作業を専任で担当する。
+NovaTech / SITEON のコード記述・テキスト出力作業を専任で担当する。
 CEO（Claude Code）から具体的な出力指示を受け、スキル準拠の高品質アウトプットを提供する。
 設計判断・顧客折衝・デプロイ判断は CEO に集約し、部署は出力作業に専念する。
+
+> **2026-09-07 役割反転** — HTML/CSS/JS は本部署（Claude Code）が記述する。
+> Codex への記述委託は廃止。Codex は**サイト完成単位で1回の監査**を担当し、指摘のみを返す。
+> 監査で指摘された修正も本部署が実施する。再監査は重要度「高」の指摘があった場合のみ。
+> 画像生成（`cx-image`）は従来どおり Codex の担当（反転対象外）。
 
 ---
 
 ## 2. 使用モデル
 
-- **主力**: Codex（GPT-5.4、OpenAI Plus $20/月）
-- **呼び出し方法**: CEO の Bash ツールから以下のコマンドで自動呼び出し（2026-05-12 検証済み）
+- **記述の主力**: Claude Code（本部署サブエージェント）。HTML/CSS/JS は自分で書く
+- **監査**: Codex（GPT-5.4、OpenAI Plus $20/月）。サイト完成単位で1回、CEO の Bash ツールから呼び出す
 
 ```bash
-script -q /dev/null codex -a never "指示内容（ファイル保存先を明記）" 2>/dev/null
+# 監査依頼（記述依頼ではない）
+script -q /dev/null codex -a never "
+【役割】監査。コードの記述・修正はしない。指摘のみを表で返す
+【対象】~/Developer/novatech-siteon-client-xxx/index.html
+【観点】(1) .claude/rules.md 全カテゴリ準拠 (2) レスポンシブ規則（カテゴリ4の40〜49含む） (3) アクセシビリティ・SEO基本項目
+【出力形式】| 指摘項目 | 該当ファイル・行 | 違反ルール番号 | 重要度(高/中/低) |
+" 2>/dev/null
 ```
 
-- **出力の読み取り**: stdout はANSIエスケープ混じりのため無視。Codexが生成したファイルを直接 Read ツールで読む
-- **ルール注入**: `AGENTS.md` に従って出力（`shared-context.md` を参照するよう記載済み）
+- **出力の読み取り**: stdout はANSIエスケープ混じり。監査レポートはファイルに書かせて Read ツールで読む
+- **ルール注入**: `AGENTS.md` に従う（`shared-context.md` を参照するよう記載済み）
 - **軽量タスク**: gpt-5.4-mini を使用してコスト節約
 - **Cursor PRO 移行**: Codex で十分なため延期（再検討は顧客5件超え後）
 
@@ -46,7 +58,8 @@ script -q /dev/null codex -a never "指示内容（ファイル保存先を明�
 
 | 道具 | 用途 |
 |-----|------|
-| Codex CLI | 全出力作業の実行エンジン（`/codex` コマンド） |
+| Claude Code 自身 | HTML/CSS/JS の記述エンジン（2026-09-07〜） |
+| Codex CLI | **監査専任**。サイト完成単位で1回、表形式レポートを受け取る |
 | スキルファイル群 | `skills/lp-*/SKILL.md` / `design-system.md` / `sections.md` 等を参照して生成 |
 | `_common/japanese-copy-guide.md` | 日本語コピー品質基準 |
 | `_common/image-guide.md` | 画像選定ルール |
@@ -120,7 +133,7 @@ Yuichi に提出または git push
 
 **タスク**: [生成内容（例: lp-salon スタンダード生成）]
 **実行日**: YYYY-MM-DD
-**使用モデル**: Codex（GPT-5.4 / gpt-5.4-mini）
+**使用モデル**: Claude Code（記述） / Codex GPT-5.4（完成単位の監査）
 
 ### 出力ファイル
 - `path/to/index.html`（X,XXX 行）
@@ -153,21 +166,21 @@ Yuichi に提出または git push
 
 ## cmux運用（2026-05-12 自動化達成）
 
-### Codex との協業手順（自動運用・達成済み）
+### Codex との協業手順（2026-09-07 役割反転後）
 
-CEO の Bash ツールから直接 Codex を呼び出す（Yuichi 手動操作不要）:
+コードは Claude Code が記述する。Codex には**サイト完成時に1回だけ監査を出す**:
 
 ```bash
-# 基本形
+# 監査依頼（commit 毎には出さない）
 script -q /dev/null codex -a never "
-【スキル】skills/lp-salon/SKILL.md + design-system.md を参照して
-【業態】美容室サロン
-【出力先】~/Developer/novatech-siteon-skills/output/client-xxx/index.html
-【指示】...
+【役割】監査専任。コードの記述・修正はしない
+【対象】~/Developer/novatech-siteon-client-xxx/index.html
+【参照】.claude/rules.md / AGENTS.md / shared-context.md
+【観点】rules.md 全カテゴリ / レスポンシブ規則40〜49 / アクセシビリティ・SEO基本項目
+【出力】監査レポートを reports/audit-client-xxx.md に表形式で保存
 " 2>/dev/null
 
-# 出力確認（stdout は無視、ファイルを直接読む）
-# → Read ツールで output/client-xxx/index.html を読む
+# → Read ツールで reports/audit-client-xxx.md を読み、指摘を Claude Code が修正する
 ```
 
 ### 完了通知
@@ -179,7 +192,7 @@ printf '\033]777;notify;制作完了;{案件名} 生成完了\033\\'
 ### Yuichi 手動操作が必要なケース
 
 - 画像生成（`cx-image` エイリアス経由）のみ手動
-- コード生成はすべて CEO が自動実行
+- コード記述は Claude Code が実行、Codex 監査の呼び出しも CEO が自動実行
 
 ---
 
@@ -189,7 +202,7 @@ printf '\033]777;notify;制作完了;{案件名} 生成完了\033\\'
 
 #### 自動起動するケース
 以下の時、CEO Claude Codeから自動Task起動:
-1. Codex が HTML/CSS/JS を出力した直後
+1. Claude Code が HTML/CSS/JS を記述した直後
 2. Kimi が日本語コピーを出力した直後
 3. 複雑なJavaScript実装が必要な時
 4. LPが完成してmobile-preview実行前
