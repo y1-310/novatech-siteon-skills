@@ -176,27 +176,38 @@ const MENU_AUDIT = function () {
   const pcs = getComputedStyle(panel);
 
   // 50: 背景が完全不透明か
+  //     backdrop-filter の blur が十分に効いている場合、背面は判読不能なぼかしになるため
+  //     意図的なガラス表現として許容する（ただし alpha が低すぎる場合は blur があっても不可）。
   const bg = pcs.backgroundColor;
   const m = bg.match(/rgba?\(([^)]+)\)/);
   const alpha = m ? (m[1].split(',')[3] !== undefined ? parseFloat(m[1].split(',')[3]) : 1) : 1;
+  const blurMatch = (pcs.backdropFilter || '').match(/blur\(([\d.]+)px\)/);
+  const blurPx = blurMatch ? parseFloat(blurMatch[1]) : 0;
   out.detail.panelBackground = bg;
-  if (alpha < 1) {
+  out.detail.backdropBlur = blurPx ? blurPx + 'px' : 'none';
+  if (alpha < 1 && !(blurPx >= 8 && alpha >= 0.92)) {
     out.violations.push({
       rule: 50, severity: '高',
-      message: `オーバーレイパネルの背景が半透明（alpha=${alpha}）。背面が透けて可読性が落ちる`,
+      message: `オーバーレイパネルの背景が半透明（alpha=${alpha}${blurPx ? ` / blur ${blurPx}px` : ' / blur なし'}）。背面が透けて可読性が落ちる`,
       selector: panel.className || panel.tagName.toLowerCase(),
     });
   }
 
   // 51: パネル上端が固定ヘッダー下端に接しているか
+  //     ただし全画面オーバーレイ（ヘッダーごと画面全体を覆う設計）は対象外。
+  //     ヘッダーの上端より上から始まり下端より下まで覆っていれば、潜っているのではなく
+  //     意図的に覆っている。
   if (header) {
     const hb = header.getBoundingClientRect();
     const nb = panel.getBoundingClientRect();
     const gap = Math.round(nb.top - hb.bottom);
+    const isFullOverlay = nb.top <= hb.top + 1 && nb.bottom >= hb.bottom - 1
+      && nb.height >= window.innerHeight * 0.9;
     out.detail.headerBottom = Math.round(hb.bottom);
     out.detail.panelTop = Math.round(nb.top);
     out.detail.gap = gap;
-    if (Math.abs(gap) > 1) {
+    out.detail.fullScreenOverlay = isFullOverlay;
+    if (!isFullOverlay && Math.abs(gap) > 1) {
       out.violations.push({
         rule: 51, severity: gap < 0 ? '高' : '中',
         message: gap < 0
@@ -400,7 +411,8 @@ const CLOSE_MENU = function () {
           console.log(`      └ ${x.selector}`);
         });
       } else if (menu.applicable) {
-        console.log(`   ✅ メニュー展開状態 OK (背景 ${menu.detail.panelBackground} / ヘッダーとの差 ${menu.detail.gap}px)`);
+        const kind = menu.detail.fullScreenOverlay ? '全画面オーバーレイ' : `ヘッダーとの差 ${menu.detail.gap}px`;
+        console.log(`   ✅ メニュー展開状態 OK (背景 ${menu.detail.panelBackground} / ${kind})`);
       }
       successCount++;
     } catch (err) {
