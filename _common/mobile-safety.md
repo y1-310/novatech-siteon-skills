@@ -64,6 +64,14 @@ body * {
   overflow-wrap: anywhere;
 }
 
+/* 1c. 日本語の禁則処理（2026-09-09 追加 / rules.md cat9 改行）
+   anywhere は禁則を無視して折り返すため、長音符「ー」・促音「ッ」・句読点が
+   行頭に孤立する。line-break: strict は min-content 幅を変えないので、
+   keep-all と違い横はみ出しを起こさずに禁則だけを回復できる。 */
+body {
+  line-break: strict;
+}
+
 /* 1b. keep-all を当てた要素の打ち消し（2026-09-07 追加 / rules.md 52）
    上の anywhere は body * に効くため、個別に word-break: keep-all を当てた要素でも
    語中改行が復活する。keep-all を使う要素には overflow-wrap: normal を必ず併記する。
