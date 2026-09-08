@@ -46,6 +46,7 @@ run_check "② 人物写真Unsplash使用チェック" "check-persons.py"
 run_check "③ ナビゲーション日本語チェック" "check-nav.py"
 run_check "④ CSSレイアウトチェック（img寸法・align-items・max-height）" "check-layout.py"
 run_check "⑤ モバイル表示チェック（320/375/390/430px 実描画）" "check-mobile.js"
+run_check "⑥ 装飾チェック（枠→余白 / AI生成臭さ）" "check-style.js"
 
 echo ""
 echo "════════════════════════════════════════════════════════════"
