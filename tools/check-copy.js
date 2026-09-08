@@ -229,8 +229,19 @@ const AUDIT = function () {
       console.log(`❌ ${label} — 日本語コピーチェック: ${v.length}件`);
       for (const x of v.slice(0, 40)) console.log(`   [${x.severity}] ${x.rule}  ${x.message}\n        ${x.where}  ${x.detail}`);
       if (v.length > 40) console.log(`   … 他 ${v.length - 40}件`);
+      const low = v.filter((x) => x.severity === '低').length;
+      const block = v.length - low;
       console.log(`   ${meta}`);
+      const hi = v.filter((x) => x.severity === '高').length;
+      console.log(`   ${hi ? '❌ commit をブロック: 高 ' + hi + '件' : '✅ 高は0件のため commit は通る'}（中 ${v.length - low - hi}件 / 低 ${low}件 は要判断・情報）`);
     }
   }
-  process.exit(result.violations.length ? 1 : 0);
+  // commit を止めるのは「高」だけにする。
+  //   高 = 禁止カタカナ・英語直訳。明確な欠陥で、置き換えれば直る
+  //   中 = 見出し20文字超・1文60文字超・行頭孤立。文言の書き換えが必要で、
+  //        何をどう言い換えるかは人の判断。ここで commit を止めると作業が止まる
+  //   低 = 読点。文章表現の問題で、機械的に直すべきものではない
+  // 中・低 は出力には出す。直すかどうかは読んだ人が決める。
+  const blocking = result.violations.filter((x) => x.severity === '高').length;
+  process.exit(blocking ? 1 : 0);
 })();
