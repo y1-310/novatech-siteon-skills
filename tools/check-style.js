@@ -165,6 +165,28 @@ const AUDIT = function () {
     });
   }
 
+  // 8. 横スクロールする文字列（マーキー） — rules.md カテゴリ4 の 66
+  //    「無限ループするアニメーション」「親が横をクリップしている」「中身が文字」の3つが
+  //    そろったものだけを拾う。幅で判定しないのは、文言が短く画面幅に収まるマーキーも
+  //    流れて見えるため（bloom 実測 641px < 1440px でも流れていた）。
+  //    スクロール指示線のような装飾は文字を持たないので除外される。
+  for (const e of document.querySelectorAll('*')) {
+    const cs = getComputedStyle(e);
+    if (cs.animationName === 'none' || !/infinite/.test(cs.animationIterationCount)) continue;
+    const text = (e.textContent || '').trim();
+    if (text.length < 8) continue;
+    const parent = e.parentElement;
+    if (!parent) continue;
+    const pox = getComputedStyle(parent).overflowX;
+    if (pox !== 'hidden' && pox !== 'clip') continue;
+    out.violations.push({
+      rule: 'no marquee', severity: '中',
+      message: '横に流れる文字列（マーキー）がある。読ませる情報がないまま視線を奪い続ける',
+      selector: sel(e),
+      detail: `${cs.animationName} 無限ループ / 「${text.slice(0, 24)}」`,
+    });
+  }
+
   // 7. 非インタラクティブなカード数（情報のみ）
   const cards = [...document.querySelectorAll('div,article,section,aside,figure,li')].filter((e) => {
     const cs = getComputedStyle(e); const r = e.getBoundingClientRect();
