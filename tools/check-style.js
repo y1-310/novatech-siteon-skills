@@ -187,6 +187,39 @@ const AUDIT = function () {
     });
   }
 
+  // 9. 写真の上に載せた情報パネル — rules.md カテゴリ4 の 68
+  //    7 のカード判定は border-radius を必須にしているため、角丸なしで背景だけの
+  //    半透明パネルはすり抜ける（tomori .floating-card を実際に見逃した）。
+  //    「画像の矩形に完全に収まる」「不透明でない背景を持つ」「文字がある」で判定する。
+  {
+    const imgs = [...document.querySelectorAll('img')]
+      .map((i) => i.getBoundingClientRect())
+      .filter((r) => r.width > 200 && r.height > 150);
+    for (const e of document.querySelectorAll('div,aside,figcaption,p,span')) {
+      const cs = getComputedStyle(e);
+      if (cs.position !== 'absolute' && cs.position !== 'fixed') continue;
+      if (isInteractive(e)) continue;
+      const text = (e.textContent || '').trim();
+      if (text.length < 10) continue;
+      const r = e.getBoundingClientRect();
+      if (r.width < 80 || r.height < 40) continue;
+      const alpha = (cs.backgroundColor.match(/rgba?\(([^)]+)\)/) || [])[1];
+      if (!alpha) continue;
+      const parts = alpha.split(',').map((x) => parseFloat(x));
+      const a = parts.length > 3 ? parts[3] : 1;
+      if (a === 0) continue;  // 背景なしの文字（ヒーローのコピー等）は対象外
+      const on = imgs.some((ir) =>
+        r.left >= ir.left - 4 && r.right <= ir.right + 4 && r.top >= ir.top - 4 && r.bottom <= ir.bottom + 4);
+      if (!on) continue;
+      out.violations.push({
+        rule: 'no panel on photo', severity: '中',
+        message: '写真の上に情報パネルを重ねている。写真を隠すうえ、文字の背景が読み手側で予測できない',
+        selector: sel(e),
+        detail: `背景 ${cs.backgroundColor}${cs.backdropFilter !== 'none' ? ' / ' + cs.backdropFilter : ''} 「${text.replace(/\s+/g, ' ').slice(0, 24)}」`,
+      });
+    }
+  }
+
   // 7. 非インタラクティブなカード数（情報のみ）
   const cards = [...document.querySelectorAll('div,article,section,aside,figure,li')].filter((e) => {
     const cs = getComputedStyle(e); const r = e.getBoundingClientRect();
