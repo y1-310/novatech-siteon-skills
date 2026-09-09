@@ -265,6 +265,22 @@ const AUDIT = function () {
     }
   }
 
+  // 12. 和文に英字用のタイポを当てている — rules.md カテゴリ4 の 75
+  //     text-transform: uppercase は日本語に効果がない。当たっているのは
+  //     英字前提のセレクタを和文にもそのまま適用している証拠になる。
+  for (const e of document.querySelectorAll('body *')) {
+    const cs = getComputedStyle(e);
+    if (cs.textTransform !== 'uppercase') continue;
+    const own = [...e.childNodes].filter((n) => n.nodeType === 3)
+      .map((n) => n.textContent.trim()).join('').trim();
+    if (!/[\u3040-\u30ff\u4e00-\u9fff]/.test(own)) continue;
+    out.violations.push({
+      rule: 'latin type on japanese', severity: '中',
+      message: '日本語に text-transform: uppercase が当たっている。英字前提のスタイルが和文に及んでいる',
+      selector: sel(e), detail: `「${own.slice(0, 20)}」`,
+    });
+  }
+
   // 7. 非インタラクティブなカード数（情報のみ）
   const cards = [...document.querySelectorAll('div,article,section,aside,figure,li')].filter((e) => {
     const cs = getComputedStyle(e); const r = e.getBoundingClientRect();
