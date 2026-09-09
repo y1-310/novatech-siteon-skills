@@ -49,6 +49,7 @@ run_check "⑤ モバイル表示チェック（320/375/390/430px 実描画）" 
 run_check "⑥ 装飾チェック（枠→余白 / AI生成臭さ）" "check-style.js"
 run_check "⑦ 作り込みチェック（アクセシビリティ / フォーム）" "check-craft.js"
 run_check "⑧ 日本語コピーチェック（カテゴリ9）" "check-copy.js"
+run_check "⑨ 写真の上の文字のコントラスト（実画素で測定）" "check-hero-contrast.js"
 
 echo ""
 echo "════════════════════════════════════════════════════════════"

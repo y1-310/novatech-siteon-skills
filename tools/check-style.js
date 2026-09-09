@@ -197,8 +197,9 @@ const AUDIT = function () {
       .filter((r) => r.width > 200 && r.height > 150);
     for (const e of document.querySelectorAll('div,aside,figcaption,p,span')) {
       const cs = getComputedStyle(e);
-      if (cs.position !== 'absolute' && cs.position !== 'fixed') continue;
-      if (isInteractive(e)) continue;
+      // 中に電話リンクがあるだけの箱は「操作要素」ではない。
+      // isInteractive は子孫まで見るため、.hero-facts（中に tel: リンク）を除外していた。
+      if (e.matches('a,button,input,textarea,select,summary,[role=button]')) continue;
       const text = (e.textContent || '').trim();
       if (text.length < 10) continue;
       const r = e.getBoundingClientRect();
@@ -210,7 +211,13 @@ const AUDIT = function () {
       if (a === 0) continue;  // 背景なしの文字（ヒーローのコピー等）は対象外
       const on = imgs.some((ir) =>
         r.left >= ir.left - 4 && r.right <= ir.right + 4 && r.top >= ir.top - 4 && r.bottom <= ir.bottom + 4);
-      if (!on) continue;
+      // 写真が <img> ではなく祖先の background-image のこともある。
+      // akari の .hero-facts はこれで検査をすり抜けていた（grid の1カラムで position も static）。
+      let onBg = false;
+      for (let a = e.parentElement; a && !onBg; a = a.parentElement) {
+        if (/url\(/.test(getComputedStyle(a).backgroundImage)) onBg = true;
+      }
+      if (!on && !onBg) continue;
       out.violations.push({
         rule: 'no panel on photo', severity: '中',
         message: '写真の上に情報パネルを重ねている。写真を隠すうえ、文字の背景が読み手側で予測できない',
