@@ -125,6 +125,13 @@ transparent → 半透明背景 + border-bottom + backdrop-filter blur
 
 ## タイポグラフィ共通仕様（2026-09-09 改訂）
 
+> 参照元: Refero Styles（https://styles.refero.design/）が公開している DESIGN.md の実例。
+> 「役割 / サイズ / 行間 / 字間」を表で持ち、表にない値を作らないという形をそのまま借りている。
+> 掲載サイトの見た目を写すのではなく、**トークンの定義の仕方**だけを参照している。
+> 実例: Seline Analytics（5段 / caption 10・body-lg 16・subheading 20・heading-sm 32・display 52）、
+> Awesomic（8段 / caption 12 〜 display 64）。どちらも1サイトあたり5〜8段に収まっている。
+
+
 **サイズは下の6段だけを使う。表にない値を新しく作らない。**
 
 旧仕様は 0.72 / 0.85 / 0.92 / 0.95 / 1rem のようにその場で決めた rem を並べていた。

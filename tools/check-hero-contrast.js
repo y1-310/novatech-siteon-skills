@@ -149,7 +149,12 @@ const AUDIT = async () => {
     const own = [...e.childNodes].some((n) => n.nodeType === 3 && n.textContent.trim().length > 1);
     if (!own) return false;
     const r = e.getBoundingClientRect();
-    return r.width > 8 && r.height > 8 && getComputedStyle(e).visibility !== 'hidden';
+    if (r.width <= 8 || r.height <= 8) return false;
+    // 閉じたモバイルメニューのように、レイアウトはされているが見えていない要素を除く。
+    // アニメーションは呼び出し側で1msに潰し、スクロールも済ませてから測るので、
+    // ここで opacity を見ても IntersectionObserver のフェードインは巻き込まない。
+    if (e.checkVisibility && !e.checkVisibility({ checkOpacity: true, checkVisibilityCSS: true })) return false;
+    return getComputedStyle(e).visibility !== 'hidden';
   });
 
   let measured = 0;
