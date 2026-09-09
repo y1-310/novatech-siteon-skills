@@ -1,41 +1,14 @@
 # 共通コンポーネント仕様
 
-## マーキーテキスト
+## マーキーテキスト（廃止 / 2026-09-09）
 
-テキスト2回繰り返し。CSS animation（25s linear infinite）。ディスプレイフォント italic。
-Conceptセクション前後に配置。英字キャッチフレーズ無限スクロール。CSS animationのみ。
+**使わない。** 横に流れる文字列は、読ませる情報がないまま視線を奪い続ける。
+装飾のためだけに `width: max-content` を作るため横はみ出しの原因にもなる。
 
-```html
-<div class="marquee" aria-hidden="true">
-  <div class="marquee-inner">
-    <span>キャッチフレーズ — </span>
-    <span>キャ��チフレーズ — </span>
-  </div>
-</div>
-```
+2026-09-09 に bloom / novatech / forge / lila / mori / tomori / tsumugi の
+7サイトから撤去した。`check-style.js` ⑧ が検出する。詳細は `.claude/rules.md` 66。
 
-```css
-.marquee {
-  overflow: hidden;
-  white-space: nowrap;
-  font-family: var(--font-display);
-  font-style: italic;
-  font-size: 1rem;
-  font-weight: 300;
-  color: var(--text-light);
-}
-.marquee-inner {
-  display: inline-block;
-  animation: marquee 25s linear infinite;
-}
-@keyframes marquee {
-  0% { transform: translateX(0); }
-  100% { transform: translateX(-50%); }
-}
-```
-
-### noscript対応
-マーキー → 静止表示
+キャッチフレーズを見せたい場合は、静止したテキストとして1回だけ置く。
 
 ## セクション区切り線
 
@@ -150,26 +123,36 @@ transparent → 半透明背景 + border-bottom + backdrop-filter blur
 <p class="section-subtitle">コンセプト</p>
 ```
 
-## タイポグラフィ共通仕様
+## タイポグラフィ共通仕様（2026-09-09 改訂）
 
-| 要素 | フォント | サイズ | Weight |
-|------|---------|--------|--------|
-| セクションナンバー | ディスプレイフォント | 0.72rem | 400 |
-| セクション英字タイトル | ディスプレイフォント | clamp(2rem, 4.5vw, 2.8rem) | 400 |
-| セクション日本語サブ | Shippori Mincho | 0.85rem | 400 |
-| 本文 | Noto Sans JP | 14.5px | 300 |
-| コンセプト文 | 和文見出しフォント | 0.92rem | 400 |
-| メニュー名 | Noto Sans JP | 0.85rem | 300 |
-| 価格 | ���ィスプレイフォント | 0.95rem | 400 |
-| マーキー | ディスプレイフォント italic | 1rem | 300 |
+**サイズは下の6段だけを使う。表にない値を新しく作らない。**
+
+旧仕様は 0.72 / 0.85 / 0.92 / 0.95 / 1rem のようにその場で決めた rem を並べていた。
+結果、実測で1サイトあたり16〜24種類の文字サイズが混在していた（Refero が公開している
+DESIGN.md の実例は5段）。11.52px と 11.84px と 12.16px の差は誰にも見えない。
+**見えない差を4つ持つのは、設計していないことの証拠になる。**
+
+| 役割 | サイズ | 行間 | 用途 |
+|------|--------|------|------|
+| micro | 12px | 1.6 | 注記・セクション番号・キャプション（12px 未満は禁止） |
+| caption | 14px | 1.7 | メタ情報・補足・ボタンのラベル |
+| body | 16px | 1.85 | 本文。**14.5px は使わない** |
+| subheading | clamp(20px, 2.4vw, 26px) | 1.5 | h3・カード見出し |
+| heading | clamp(28px, 4vw, 40px) | 1.35 | 日本語の文を h2 に置く場合 |
+| display | clamp(38px, 6.4vw, 72px) | 0.98 | `Concept` のような英字1〜2語のセクション見出し |
+
+- **display は英字のディスプレイ語にだけ使う。** 日本語の文に 72px を当てると1行に数語しか
+  入らない（`.claude/rules.md` 67）。日本語の見出しは heading を使う。
+- 行間は役割ごとに固定する。1サイトで20種類以上の line-height が出るのは、
+  段を持たずにその場で決めている状態。
 
 ## レスポンシブ共通仕様
 
 | ブレークポイント | padding | グリッド | ヒーロー |
 |----------------|---------|---------|---------|
-| Desktop（1280px+） | 120px | 2〜3列 | 100vh |
-| Tablet（768px） | 80px | 1〜2列 | 100vh |
-| Mobile（375px） | 72px | 1列 | 100vh（min-height: 520px） |
+| Desktop（1280px+） | 120px | 2〜3列 | 100dvh（100vh を先に併記） |
+| Tablet（768px） | 80px | 1〜2列 | 100dvh（100vh を先に併記） |
+| Mobile（375px） | 72px | 1列 | 100dvh（min-height: 520px） |
 
 ---
 

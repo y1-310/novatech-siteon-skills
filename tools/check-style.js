@@ -220,6 +220,51 @@ const AUDIT = function () {
     }
   }
 
+  // 10. タイプスケールの段数 — rules.md カテゴリ4 の 70
+  //     文字を直接持つ要素の font-size を数える。Refero が公開している DESIGN.md の
+  //     実例は5段。段を持たずにその場で rem を決めると 11.52 / 11.84 / 12.16 のような
+  //     見分けのつかない値が並ぶ。
+  {
+    const sizes = new Map();
+    for (const e of document.querySelectorAll('body *')) {
+      const r = e.getBoundingClientRect();
+      if (!r.width || !r.height) continue;
+      const own = [...e.childNodes].some((n) => n.nodeType === 3 && n.textContent.trim().length > 1);
+      if (!own) continue;
+      const fs2 = getComputedStyle(e).fontSize;
+      sizes.set(fs2, (sizes.get(fs2) || 0) + 1);
+    }
+    out.info.typeScaleSteps = sizes.size;
+    if (sizes.size > 10) {
+      const sorted = [...sizes.entries()].sort((a, b) => parseFloat(a[0]) - parseFloat(b[0]));
+      out.violations.push({
+        rule: 'type scale', severity: '低',
+        message: `文字サイズが ${sizes.size} 種類ある。段を決めずにその場で値を作っている`,
+        selector: 'body', detail: sorted.map(([k, v]) => `${k}×${v}`).join(' '),
+      });
+    }
+  }
+
+  // 11. 角丸の種類数 — rules.md カテゴリ4 の 71
+  //     「箱 / ピル / 円」の3種で足りる。8px と 10px と 12px を混ぜても誰も見分けない。
+  {
+    const radii = new Set();
+    for (const e of document.querySelectorAll('body *')) {
+      const r = e.getBoundingClientRect();
+      if (r.width < 16 || r.height < 16) continue;
+      const v = getComputedStyle(e).borderTopLeftRadius;
+      if (v && v !== '0px') radii.add(v);
+    }
+    out.info.radiusKinds = radii.size;
+    if (radii.size > 3) {
+      out.violations.push({
+        rule: 'radius kinds', severity: '中',
+        message: `角丸が ${radii.size} 種類ある。箱・ピル・円の3種に畳む`,
+        selector: 'body', detail: [...radii].join(' / '),
+      });
+    }
+  }
+
   // 7. 非インタラクティブなカード数（情報のみ）
   const cards = [...document.querySelectorAll('div,article,section,aside,figure,li')].filter((e) => {
     const cs = getComputedStyle(e); const r = e.getBoundingClientRect();
@@ -276,12 +321,15 @@ const AUDIT = function () {
     const order = { 高: 0, 中: 1, 低: 2 };
     v.sort((a, b) => order[a.severity] - order[b.severity]);
     if (!v.length) {
-      console.log(`✅ ${label} — 装飾チェック: 問題なし  (カード ${result.info.cardsTotal}件 / 非操作 ${result.info.cardsNonInteractive}件)`);
+      console.log(`✅ ${label} — 装飾チェック: 問題なし  (カード ${result.info.cardsTotal}件 / 非操作 ${result.info.cardsNonInteractive}件 / 字種 ${result.info.typeScaleSteps} / 角丸 ${result.info.radiusKinds}種)`);
     } else {
       console.log(`❌ ${label} — 装飾チェック: ${v.length}件`);
       for (const x of v) console.log(`   [${x.severity}] ${x.rule}  ${x.message}\n        ${x.selector}  ${x.detail}`);
-      console.log(`   (カード ${result.info.cardsTotal}件 / 非操作 ${result.info.cardsNonInteractive}件)`);
+      console.log(`   (カード ${result.info.cardsTotal}件 / 非操作 ${result.info.cardsNonInteractive}件 / 字種 ${result.info.typeScaleSteps} / 角丸 ${result.info.radiusKinds}種)`);
     }
   }
-  process.exit(result.violations.length ? 1 : 0);
+  // commit を止めるのは 高 / 中 だけ。低（字種の多さ・ALL CAPS の字間）は
+  // 情報として出すが作業は止めない。厳しすぎる検査は無視されるようになる。
+  const blocking = result.violations.filter((x) => x.severity !== '低').length;
+  process.exit(blocking ? 1 : 0);
 })();
