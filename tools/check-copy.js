@@ -62,10 +62,21 @@ const AUDIT = function () {
   for (const b of blocks) {
     if (!isJa(b.text)) continue;
     if (/^h[12]$/.test(b.tag)) {
-      if (b.text.length > 20) add('cat9 文字数', '中', `見出しが20文字を超えている（${b.text.length}文字）`, `${b.section} ${b.tag}`, b.text.slice(0, 34));
+      // 文字数ではなく実際の行数で見る。
+      // 20文字という上限は根拠が薄く、editorial な見出しを一律に弾いてしまう。
+      // 実害は「スマートフォンで3行以上に割れて塊に見えること」なので、そこを測る。
+      const cs = getComputedStyle(b.el);
+      const lh = parseFloat(cs.lineHeight) || parseFloat(cs.fontSize) * 1.5;
+      const lines = Math.round(b.el.getBoundingClientRect().height / lh);
+      if (lines >= 3) {
+        add('cat9 見出しの行数', '中', `見出しが${lines}行に割れている（${b.text.length}文字）`,
+            `${b.section} ${b.tag}`, b.text.slice(0, 34));
+      }
       continue;
     }
     if (/^h[34]$/.test(b.tag)) continue;
+    // 「A / B / C」のように区切り記号で並べた一覧は文ではない
+    if ((b.text.match(/\s\/\s/g) || []).length >= 2) continue;
     for (const s of b.text.split(/(?<=。)/)) {
       const t = s.trim(); if (t.length <= 60) continue;
       add('cat9 文字数', '中', `1文が60文字を超えている（${t.length}文字）`, `${b.section} ${b.tag}.${b.cls}`, t.slice(0, 40) + '…');
@@ -205,7 +216,8 @@ const AUDIT = function () {
   }
   const label = path.basename(target.replace(/\/$/, '')) || target;
   const browser = await loadChromium().launch();
-  const ctx = await browser.newContext({ viewport: { width: 1280, height: 900 } });
+  // 見出しが何行に割れるかはスマートフォン幅でしか分からない。
+  const ctx = await browser.newContext({ viewport: { width: 390, height: 900 } });
   const page = await ctx.newPage();
   let result;
   try {
