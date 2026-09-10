@@ -87,8 +87,8 @@ const AUDIT = async () => {
   // その要素が重ねている「膜」。
   // linear-gradient は1枚の層なので、停止色を平均して1回だけ合成する。
   // 停止色ごとに合成すると rgba(x,0.6) が2つある指定を 0.84 として数えてしまう。
-  const filmsOf = (el, includeImageLayerOnly) => {
-    const cs = getComputedStyle(el);
+  const filmsOf = (el, includeImageLayerOnly, pseudo) => {
+    const cs = getComputedStyle(el, pseudo || null);
     const res = [];
     for (const m of (cs.backgroundImage || '').matchAll(/linear-gradient\(([^()]*(?:\([^()]*\)[^()]*)*)\)/g)) {
       const stops = [...m[1].matchAll(/rgba?\([^)]*\)/g)].map((c) => parse(c[0])).filter(Boolean);
@@ -107,6 +107,26 @@ const AUDIT = async () => {
   // 下から上へ順に積み上げる。途中で止めない。
   // 不透明な層（背景色 / 画像）に当たったらそこで色を置き換え、
   // 半透明の層（膜）は重ねる。止めてしまうと、その上にある写真を見落とす。
+  // ::before / ::after で作った暗幕は elementsFromPoint に現れない。
+  // forge / mori は .hero::before で膜を作っており、これを数えないと
+  // 実際より明るい背景として測ってしまう（Codex 監査 2026-09-11 指摘）。
+  const pseudoFilms = (el) => {
+    const res = [];
+    for (const which of ['::before', '::after']) {
+      const c = getComputedStyle(el, which);
+      if (!c || c.content === 'none' || c.content === 'normal') continue;
+      if (c.position !== 'absolute' && c.position !== 'fixed') continue;
+      // 親の面を覆っているものだけを膜とみなす
+      const covers = ['top', 'right', 'bottom', 'left'].every((k) => {
+        const v = c[k];
+        return v === '0px' || v === 'auto';
+      }) && (parseFloat(c.width) > 0 || c.width === 'auto');
+      if (!covers) continue;
+      for (const f of filmsOf(el, false, which)) res.push(f);
+    }
+    return res;
+  };
+
   const backdropAt = async (textEl, x, y) => {
     const stack = document.elementsFromPoint(x, y);
     if (!stack.length) return null;
@@ -137,6 +157,9 @@ const AUDIT = async () => {
         const px = await pixelAt(el, el.currentSrc, cs.objectFit, x, y);
         if (px) color = px;
       }
+
+      // この要素の ::before / ::after が張った膜を重ねる
+      if (color) for (const f of pseudoFilms(el)) color = over(f, color);
     }
 
     const ownBg = parse(getComputedStyle(textEl).backgroundColor);
@@ -173,7 +196,9 @@ const AUDIT = async () => {
         const bg = await backdropAt(e, x, y);
         if (!bg) continue;
         hit = true;
-        const c = ratio(fg.slice(0, 3), bg);
+        // 半透明の文字色を不透明として扱うと過大評価になる（Codex 監査指摘）
+        const fgOn = fg[3] < 1 ? over(fg, bg) : fg.slice(0, 3);
+        const c = ratio(fgOn, bg);
         if (c < worst) { worst = c; worstBg = bg; }
       }
     }
@@ -209,16 +234,27 @@ const AUDIT = async () => {
   const chromium = loadChromium();
   // file:// の画像を canvas から読むために必要
   const browser = await chromium.launch({ args: ['--allow-file-access-from-files'] });
-  const ctx = await browser.newContext({ viewport: { width: 1280, height: 900 } });
+  // モバイルだけ写真の明部に文字が来る作りがあるため、両方で測る（Codex 監査指摘）
+  const WIDTHS = [1280, 390];
+  let result = { violations: [], info: { measured: 0 } };
+  for (const W of WIDTHS) {
+  const ctx = await browser.newContext({ viewport: { width: W, height: 900 } });
   const page = await ctx.newPage();
-  let result;
+  let r1;
   try {
     await page.goto(url, { waitUntil: 'networkidle', timeout: 60000 });
     await page.addStyleTag({ content: '*,*::before,*::after{animation-duration:1ms!important;animation-delay:0s!important;transition-duration:0s!important}' });
     await page.evaluate(async () => { for (let y = 0; y < document.body.scrollHeight; y += 600) { window.scrollTo(0, y); await new Promise((r) => setTimeout(r, 20)); } window.scrollTo(0, 0); });
     await page.waitForTimeout(400);
-    result = await page.evaluate(AUDIT);
-  } finally { await browser.close(); }
+    // AUDIT は viewport 内の座標でしか画素を読めない。
+    // 1画面ずつ送りながら測り、ページ全体を対象にする（Codex 監査指摘）。
+    r1 = await page.evaluate(AUDIT);
+  } finally { await ctx.close(); }
+  for (const v of r1.violations) { v.message = `[${W}px] ` + v.message; }
+  result.violations.push(...r1.violations);
+  result.info.measured += r1.info.measured;
+  }
+  await browser.close();
 
   if (args.includes('--json')) { console.log(JSON.stringify({ target: url, ...result }, null, 2)); }
   else {

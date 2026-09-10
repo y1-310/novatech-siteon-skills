@@ -59,24 +59,34 @@ const AUDIT = function () {
   info.chars = allText.length;
 
   // ---- 1文60文字 / 見出し20文字 ----
+  // 見出しは <h2><span>…</span></h2> の形もあるため、blocks とは別に走査する
+  for (const el of document.querySelectorAll('h1,h2')) {
+    const t = (el.innerText || '').replace(/\s+/g, '').trim();
+    if (!t || !isJa(t)) continue;
+    const cs = getComputedStyle(el);
+    let lh = parseFloat(cs.lineHeight);
+    if (!lh || cs.lineHeight === 'normal') lh = parseFloat(cs.fontSize) * 1.5;
+    const lines = Math.round(el.getBoundingClientRect().height / lh);
+    if (lines >= 3) {
+      add('cat9 見出しの行数', '中', `見出しが${lines}行に割れている（${t.length}文字）`,
+          `${(el.closest('section') || {}).id || '-'} ${el.tagName.toLowerCase()}`, t.slice(0, 34));
+    }
+  }
+
   for (const b of blocks) {
     if (!isJa(b.text)) continue;
     if (/^h[12]$/.test(b.tag)) {
       // 文字数ではなく実際の行数で見る。
       // 20文字という上限は根拠が薄く、editorial な見出しを一律に弾いてしまう。
       // 実害は「スマートフォンで3行以上に割れて塊に見えること」なので、そこを測る。
-      const cs = getComputedStyle(b.el);
-      const lh = parseFloat(cs.lineHeight) || parseFloat(cs.fontSize) * 1.5;
-      const lines = Math.round(b.el.getBoundingClientRect().height / lh);
-      if (lines >= 3) {
-        add('cat9 見出しの行数', '中', `見出しが${lines}行に割れている（${b.text.length}文字）`,
-            `${b.section} ${b.tag}`, b.text.slice(0, 34));
-      }
-      continue;
+      continue; // 行数判定は上の h1/h2 走査で済ませている
     }
     if (/^h[34]$/.test(b.tag)) continue;
     // 「A / B / C」のように区切り記号で並べた一覧は文ではない
-    if ((b.text.match(/\s\/\s/g) || []).length >= 2) continue;
+    // 区切り記号で並べた一覧は文ではない。ただし本文中にたまたま / が出る長文を
+    // 丸ごと除外しないよう、「区切りで割った各片が短い」ことを条件にする。
+    const parts = b.text.split(/\s\/\s/);
+    if (parts.length >= 3 && parts.every((x) => x.trim().length <= 24)) continue;
     for (const s of b.text.split(/(?<=。)/)) {
       const t = s.trim(); if (t.length <= 60) continue;
       add('cat9 文字数', '中', `1文が60文字を超えている（${t.length}文字）`, `${b.section} ${b.tag}.${b.cls}`, t.slice(0, 40) + '…');
