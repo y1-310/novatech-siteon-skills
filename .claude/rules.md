@@ -87,6 +87,9 @@
 63. **`word-break: keep-all` は h1 / h2 までにとどめる**。h3 以下はグリッド内の小見出しが多く、keep-all を当てると 320px で溢れる（mori 実測 294px > 288px）。`overflow-wrap: break-word` は **min-content 幅を縮めないため回避できない**（縮めるのは `anywhere` だけ）。h3 以下の禁則は 62 で担保する。
 64. **h1 / h2 には `word-break: keep-all` と `overflow-wrap: break-word` を併記する**。`normal` だと収まらない見出しがそのまま溢れる（forge 実測 393px > 390px / mori 594px > 430px）。`break-word` なら通常は文節で改行し、溢れる場合だけ語中で折り返す。
 
+> **iOS Safari では `keep-all` が CJK に効かない**（2026-09-11 実機確認）。同じURL・同じCSS・402pt 幅で、1行に入る文字数が Chromium 11文字 / iOS Safari 23文字 と倍近く違い、iOS では語中で折れる。Playwright の WebKit でも再現しないため、自動検査では捕まえられない。**keep-all は「デスクトップでより良く見せる上乗せ」として扱い、これが効くことを前提に設計しない。** 禁則そのものは `line-break: strict`（62）が iOS でも効いているので、行頭の句読点は防げている。詳細は `.claude/lessons.md` 10。
+
+
 ### デザイン層の追加ルール（65〜76 / 2026-09-09 追加）
 
 65. **デザイン用の追加CSSは、mobile-safety のメディアクエリより「前」に挿入する**。`</style>` の直前に足すと、末尾にある `@media (max-width: 768px) { .section-number { font-size: 12px } }` などの安全ルールを打ち消す。メディアクエリは詳細度を上げないため、後ろに書いたルールが無条件に勝つ。実測: bloom で末尾に足したところ section-number が 10.56px になり、モバイル検査が9件失敗した（挿入位置を変えるだけで0件）。
