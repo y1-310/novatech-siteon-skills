@@ -13,8 +13,8 @@
 | # | 症状 | 原因 | 対策 |
 |---|------|------|------|
 | 1 | 横スクロールが出る | 固定幅・はみ出し要素 | 幅指定を `min()` / `max-width:100%` に |
-| 2 | 日本語見出しが右で切れる | `word-break: keep-all` 単独 | `overflow-wrap: anywhere` を必ず併用 |
-| 2b | 長音符「ー」が行頭に孤立 | `body * { overflow-wrap: anywhere }` が `keep-all` を上書き | keep-all を当てた要素に `overflow-wrap: normal` を併記（rules.md 52） |
+| 2 | 日本語見出しが右で切れる | `word-break: keep-all` 単独 | `overflow-wrap: break-word` を併用。それでも溢れるなら `<wbr>` で折る位置を指定（rules.md 64 / 78） |
+| 2b | 長音符「ー」「。」「、」が行頭に孤立 | `overflow-wrap` が禁則を無視した位置で折っている。`anywhere` でも `break-word` でも起きる | `body` から `keep-all` を外す。残るのは見出しだけなので `<wbr>` で折る位置を指定（rules.md 78） |
 | 2c | ナビパネル越しに背面が透ける | `rgba(..., 0.98)` の「ほぼ不透明」 | パネル背景を完全不透明にする（rules.md 50） |
 | 2d | ナビパネルがヘッダーの裏に潜る | `top: var(--header-h)` の固定px参照 | `position: absolute; inset: 100% 0 auto 0;` でヘッダー実高に追従（rules.md 51） |
 | 3 | はみ出しが `overflow-x:hidden` で隠れている | ルートで握り潰し | 原因側を直す。ルートの hidden は対症療法 |
@@ -54,27 +54,46 @@
 }
 
 /* 1. 日本語の折り返し
-   keep-all だけだと CJK 連続が分割されず、コンテナ幅を超えて切れる。
    overflow-wrap は継承プロパティなので body だけに指定すると、
-   個別に break-word を当てた要素で溢れが残る。
-   grid / flex の min-content 幅にも効かせるため全要素に指定する。
-   （break-word では min-content が縮まないので anywhere でなければ直らない） */
+   個別に指定した要素で溢れが残る。全要素に指定する。
+
+   2026-09-11 変更（rules.md 78）: anywhere → break-word。
+   anywhere は禁則（line-break: strict）を無効にし、「。」「、」「ー」を
+   行頭に孤立させる。全8サイトで移行し、行頭孤立は akari 15件 / mori 9件 /
+   tomori 6件 → いずれも0件になった。
+
+   break-word は min-content 幅を縮めないため、37/38/39 を満たしていることが
+   前提になる。移行時に akari の .about-copy / .faq-list が
+   `display: grid` で grid-template-columns 未指定（38）だったのが露出し、
+   320px で 354px / 373.75px の暗黙トラックを作っていた。
+   anywhere はこの種の設計不足を隠すだけで、直してはいない。 */
 body,
 body * {
-  overflow-wrap: anywhere;
+  overflow-wrap: break-word;
+}
+
+/* 1a. body に word-break: keep-all を置かない（rules.md 78）
+   keep-all は CJK をひと続きの「単語」にするため、行に収まらないときの
+   overflow-wrap による折り返しが禁則を無視した位置で起きる。
+   文節を保ちたいのは見出しだけなので、h1 / h2 に限定する。 */
+h1, h2 {
+  word-break: keep-all;
+  overflow-wrap: break-word;
 }
 
 /* 1c. 日本語の禁則処理（2026-09-09 追加 / rules.md cat9 改行）
-   anywhere は禁則を無視して折り返すため、長音符「ー」・促音「ッ」・句読点が
-   行頭に孤立する。line-break: strict は min-content 幅を変えないので、
-   keep-all と違い横はみ出しを起こさずに禁則だけを回復できる。 */
+   line-break: strict は min-content 幅を変えないので、keep-all と違い
+   横はみ出しを起こさずに禁則だけを効かせられる。
+   ただし上の overflow-wrap が anywhere だと禁則ごと無視されるため、
+   break-word とセットでなければ意味がない（rules.md 78）。 */
 body {
   line-break: strict;
 }
 
 /* 1b. keep-all を当てた要素の打ち消し（2026-09-07 追加 / rules.md 52）
-   上の anywhere は body * に効くため、個別に word-break: keep-all を当てた要素でも
-   語中改行が復活する。keep-all を使う要素には overflow-wrap: normal を必ず併記する。
+   ヘッダーの店舗説明のように「溢れない長さであることが分かっている」短文だけ、
+   overflow-wrap: normal で語中改行を止める。長い文には使わない
+   （収まらなかったときに溢れたまま止まるため）。
    （bloom 実機検証: ヘッダーの店舗説明が「トータルビューティ／ー」と切れ、
      長音符が行頭に孤立した） */
 .brand-meta,
