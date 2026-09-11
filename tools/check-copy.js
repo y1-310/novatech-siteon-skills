@@ -67,8 +67,13 @@ const AUDIT = function () {
     let lh = parseFloat(cs.lineHeight);
     if (!lh || cs.lineHeight === 'normal') lh = parseFloat(cs.fontSize) * 1.5;
     const lines = Math.round(el.getBoundingClientRect().height / lh);
+    // 2026-09-11 見直し。3行を一律に違反としていたが、ヒーローの大きな
+    // ディスプレイ見出し（tomori「素材と火、ふたつだけで語る。」14文字）は
+    // 意図して3行に置いている。問題なのは1行あたりの文字数が落ちて
+    // 文が細切れになる場合なので、4行以上を違反、3行は情報として出す。
     if (lines >= 3) {
-      add('cat9 見出しの行数', '中', `見出しが${lines}行に割れている（${t.length}文字）`,
+      add('cat9 見出しの行数', lines >= 4 ? '中' : '低',
+          `見出しが${lines}行に割れている（${t.length}文字 / 1行あたり約${Math.round(t.length / lines)}文字）`,
           `${(el.closest('section') || {}).id || '-'} ${el.tagName.toLowerCase()}`, t.slice(0, 34));
     }
   }
@@ -93,16 +98,35 @@ const AUDIT = function () {
     }
   }
 
-  // ---- 読点: 20文字以上読点なし / 1文に読点3個以上 ----
+  // ---- 読点 ----
+  // 2026-09-11 見直し。従来は「1文に読点3個以上」「20文字以上読点なし」で
+  // 87件を挙げていたが、その大半は住所・営業時間・並列の列挙で、直しようがなかった。
+  // 読みにくさは読点の個数ではなく「ひと息で読む長さ」で決まる。
+  //   - 住所 / 営業時間 / 価格など文でないものは対象から外す
+  //   - 「A、B、C」の列挙は、区切りが短ければ読点がいくつあっても読める
+  const isProse = (t, b) => {
+    if (/(meta|address|hours|price|date|time|tel|access|subtitle)/i.test(b.cls || '')) return false;
+    if (/^(dd|time)$/.test(b.tag) && !/。/.test(t)) return false;
+    // 句点で終わらず、数字や区切り記号を含むもの（住所・時間・電話・型番）
+    if (!/。/.test(t) && /[0-9０-９/／~〜–—-]/.test(t)) return false;
+    return true;
+  };
   for (const b of blocks) {
     if (/^h[1-4]$/.test(b.tag) || !isJa(b.text)) continue;
     for (const s of b.text.split(/(?<=。)/)) {
       const t = s.trim(); if (t.length < 6 || !isJa(t)) continue;
-      const commas = (t.match(/、/g) || []).length;
-      // guide 15章: 1文に読点は最大2つ。3つ以上入るなら文を分割する
-      if (commas >= 3) add('cat9 読点', '低', `1文に読点が${commas}個ある（最大2つ。3つ以上なら文を分割する）`, `${b.section} ${b.tag}.${b.cls}`, t.slice(0, 40));
-      // guide 15章: 20文字以上続いたら読点を打つ
-      if (t.length >= 20 && commas === 0) add('cat9 読点', '低', `${t.length}文字の文に読点がない`, `${b.section} ${b.tag}.${b.cls}`, t.slice(0, 40));
+      if (!isProse(t, b)) continue;
+      const segs = t.split('、');
+      // 長い区切りが3つ以上続く文は、読点を足しても読みやすくならない。文を分ける
+      const longSegs = segs.filter((x) => x.length > 14).length;
+      if (longSegs >= 3) {
+        add('cat9 読点', '低', `長い区切りが${longSegs}個続いている（読点ではなく文を分ける）`, `${b.section} ${b.tag}.${b.cls}`, t.slice(0, 40));
+      }
+      // 読点なしでひと息に読ませる長さの上限
+      const worst = Math.max(...segs.map((x) => x.length));
+      if (worst >= 30) {
+        add('cat9 読点', '低', `読点なしで${worst}文字続いている`, `${b.section} ${b.tag}.${b.cls}`, t.slice(0, 40));
+      }
     }
   }
 

@@ -170,6 +170,40 @@ const AUDIT = function () {
   //    そろったものだけを拾う。幅で判定しないのは、文言が短く画面幅に収まるマーキーも
   //    流れて見えるため（bloom 実測 641px < 1440px でも流れていた）。
   //    スクロール指示線のような装飾は文字を持たないので除外される。
+  //    無限ループというだけでは足りない。点滅やフェードも無限ループなので、
+  //    @keyframes を読んで「横方向に動いているか」を確かめる（Codex 監査 2026-09-11 指摘）。
+  const keyframesOf = (name) => {
+    for (const sheet of document.styleSheets) {
+      let rules;
+      try { rules = sheet.cssRules; } catch (err) { continue; }  // 別オリジンのCSSは読めない
+      for (const r of rules || []) {
+        if (r.type === CSSRule.KEYFRAMES_RULE && r.name === name) return [...r.cssRules];
+      }
+    }
+    return null;
+  };
+  // transform / left / margin-left から横方向の位置を1つの数値で取り出す。
+  // 単位が混ざるので px と % は区別せず、「値が変わったか」だけを見る。
+  const xOf = (style) => {
+    const t = style.transform || '';
+    let m = t.match(/translate(?:X|3d)?\(\s*(-?[\d.]+)(px|%)/);
+    if (m) return m[1] + m[2];
+    m = t.match(/translate\(\s*(-?[\d.]+)(px|%)/);
+    if (m) return m[1] + m[2];
+    for (const k of ['left', 'right', 'marginLeft']) {
+      const v = style[k];
+      if (v && v !== 'auto' && v !== '0px') return k + ':' + v;
+    }
+    return null;
+  };
+  const movesHorizontally = (name) => {
+    const kfs = keyframesOf(name);
+    if (!kfs) return null;  // 読めなかった場合は判定を保留する
+    const xs = new Set();
+    for (const kf of kfs) xs.add(xOf(kf.style) || 'none');
+    return xs.size > 1;
+  };
+
   for (const e of document.querySelectorAll('*')) {
     const cs = getComputedStyle(e);
     if (cs.animationName === 'none' || !/infinite/.test(cs.animationIterationCount)) continue;
@@ -179,11 +213,13 @@ const AUDIT = function () {
     if (!parent) continue;
     const pox = getComputedStyle(parent).overflowX;
     if (pox !== 'hidden' && pox !== 'clip') continue;
+    const moves = movesHorizontally(cs.animationName.split(',')[0].trim());
+    if (moves === false) continue;  // 点滅・拡縮などは対象外
     out.violations.push({
       rule: 'no marquee', severity: '中',
       message: '横に流れる文字列（マーキー）がある。読ませる情報がないまま視線を奪い続ける',
       selector: sel(e),
-      detail: `${cs.animationName} 無限ループ / 「${text.slice(0, 24)}」`,
+      detail: `${cs.animationName} 無限ループ${moves === null ? '（keyframes を読めず横移動は未確認）' : '・横移動あり'} / 「${text.slice(0, 24)}」`,
     });
   }
 
@@ -193,9 +229,11 @@ const AUDIT = function () {
   //    「画像の矩形に完全に収まる」「不透明でない背景を持つ」「文字がある」で判定する。
   {
     const imgs = [...document.querySelectorAll('img')]
-      .map((i) => i.getBoundingClientRect())
-      .filter((r) => r.width > 200 && r.height > 150);
-    for (const e of document.querySelectorAll('div,aside,figcaption,p,span')) {
+      .map((el) => ({ el, rect: el.getBoundingClientRect() }))
+      .filter((x) => x.rect.width > 200 && x.rect.height > 150);
+    // section / article / li も箱として使われる。backdrop-filter だけで
+    // 背景色を持たない「すりガラス」パネルも同じ問題を起こす（Codex 監査 2026-09-11 指摘）。
+    for (const e of document.querySelectorAll('div,aside,figcaption,p,span,section,article,li,dl,blockquote')) {
       const cs = getComputedStyle(e);
       // 中に電話リンクがあるだけの箱は「操作要素」ではない。
       // isInteractive は子孫まで見るため、.hero-facts（中に tel: リンク）を除外していた。
@@ -204,18 +242,31 @@ const AUDIT = function () {
       if (text.length < 10) continue;
       const r = e.getBoundingClientRect();
       if (r.width < 80 || r.height < 40) continue;
+      const glass = cs.backdropFilter && cs.backdropFilter !== 'none';
       const alpha = (cs.backgroundColor.match(/rgba?\(([^)]+)\)/) || [])[1];
-      if (!alpha) continue;
-      const parts = alpha.split(',').map((x) => parseFloat(x));
-      const a = parts.length > 3 ? parts[3] : 1;
-      if (a === 0) continue;  // 背景なしの文字（ヒーローのコピー等）は対象外
-      const on = imgs.some((ir) =>
-        r.left >= ir.left - 4 && r.right <= ir.right + 4 && r.top >= ir.top - 4 && r.bottom <= ir.bottom + 4);
+      const parts = alpha ? alpha.split(',').map((x) => parseFloat(x)) : [];
+      const a = parts.length > 3 ? parts[3] : (alpha ? 1 : 0);
+      // 背景なしの文字（ヒーローのコピー等）は対象外。ただし backdrop-filter を
+      // 持つ箱は背景色が透明でも「面」として写真を隠している。
+      if (a === 0 && !glass) continue;
+      // 写真を「内側に持っている」箱は、写真の上に載ったパネルではない。
+      // 子孫の <img> をそのまま数えていたため、ヒーロー節や写真カードそのものを
+      // パネルとして挙げていた（Codex 監査 2026-09-11 指摘）。
+      const area = r.width * r.height;
+      const on = imgs.some((im) => {
+        if (e.contains(im.el)) return false;
+        const ir = im.rect;
+        if (!(r.left >= ir.left - 4 && r.right <= ir.right + 4 && r.top >= ir.top - 4 && r.bottom <= ir.bottom + 4)) return false;
+        // 写真とほぼ同じ大きさの面は、読ませるための暗幕であってパネルではない
+        return area < ir.width * ir.height * 0.7;
+      });
       // 写真が <img> ではなく祖先の background-image のこともある。
       // akari の .hero-facts はこれで検査をすり抜けていた（grid の1カラムで position も static）。
       let onBg = false;
-      for (let a = e.parentElement; a && !onBg; a = a.parentElement) {
-        if (/url\(/.test(getComputedStyle(a).backgroundImage)) onBg = true;
+      for (let anc = e.parentElement; anc && anc !== document.body && !onBg; anc = anc.parentElement) {
+        if (!/url\(/.test(getComputedStyle(anc).backgroundImage)) continue;
+        const ar = anc.getBoundingClientRect();
+        if (area < ar.width * ar.height * 0.7) onBg = true;
       }
       if (!on && !onBg) continue;
       out.violations.push({
@@ -242,7 +293,9 @@ const AUDIT = function () {
       sizes.set(fs2, (sizes.get(fs2) || 0) + 1);
     }
     out.info.typeScaleSteps = sizes.size;
-    if (sizes.size > 10) {
+    // ルール70 は7段（micro/small/body/lead/subheading/heading/display）。
+    // 10 を許容していたのはルール本文と食い違っていた（Codex 監査 2026-09-11 指摘）。
+    if (sizes.size > 7) {
       const sorted = [...sizes.entries()].sort((a, b) => parseFloat(a[0]) - parseFloat(b[0]));
       out.violations.push({
         rule: 'type scale', severity: '低',
@@ -269,6 +322,25 @@ const AUDIT = function () {
         message: `角丸が ${radii.size} 種類ある。箱・ピル・円の3種に畳む`,
         selector: 'body', detail: [...radii].join(' / '),
       });
+    }
+    // 種類数だけでは「4px と 6px の2種」を通してしまう。
+    // ルール71 は値まで決めている — 箱 = var(--r) / ピル = 999px / 円 = 50%
+    // （Codex 監査 2026-09-11 指摘）。
+    {
+      const boxR = getComputedStyle(document.documentElement).getPropertyValue('--r').trim();
+      const allowed = (v) => {
+        if (v === '50%' || v === boxR) return true;
+        const n = parseFloat(v);
+        return v.endsWith('px') && n >= 999;   // ピル。100px は使わない
+      };
+      const odd = [...radii].filter((v) => !allowed(v));
+      if (odd.length) {
+        out.violations.push({
+          rule: 'radius values', severity: '中',
+          message: `角丸に決めていない値がある。箱は var(--r)（${boxR || '未定義'}）、ピルは 999px、円は 50%`,
+          selector: 'body', detail: odd.join(' / '),
+        });
+      }
     }
   }
 
