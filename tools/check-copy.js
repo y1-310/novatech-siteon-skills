@@ -92,6 +92,11 @@ const AUDIT = function () {
     // 丸ごと除外しないよう、「区切りで割った各片が短い」ことを条件にする。
     const parts = b.text.split(/\s\/\s/);
     if (parts.length >= 3 && parts.every((x) => x.trim().length <= 24)) continue;
+    // 営業時間・住所・電話番号のような「文でないもの」に文字数の上限を当てても
+    // 直しようがない（「月 10:00-19:00 水・木・金 11:00-21:00 …」を64文字として
+    // 挙げていた）。読点ルールと同じ判定を使う。2026-09-11 追加。
+    if (!/。/.test(b.text) && /[0-9０-９/／~〜–—-]/.test(b.text)) continue;
+    if (/(meta|address|hours|price|date|time|tel|access)/i.test(b.cls || '')) continue;
     for (const s of b.text.split(/(?<=。)/)) {
       const t = s.trim(); if (t.length <= 60) continue;
       add('cat9 文字数', '中', `1文が60文字を超えている（${t.length}文字）`, `${b.section} ${b.tag}.${b.cls}`, t.slice(0, 40) + '…');
